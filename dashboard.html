@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CargoQuotes — Trainer Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0d0f14;--surface:#161a22;--card:#1d2330;--border:#2a3245;
+  --accent:#f5a623;--accent2:#4fc3f7;--success:#66bb6a;--error:#ef5350;
+  --text:#e8eaf0;--muted:#7a8499;--warn:#f39c12;
+  --ltl:#9b59b6;--tl:#e67e22;--either:#1abc9c;--adv:#e74c3c;--ct:#f39c12;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:1.1rem;font-weight:800;letter-spacing:2px;color:var(--accent);}
+.logo span{color:var(--text);}
+.logo-sub{font-size:.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;margin-top:2px;}
+.hdr-right{display:flex;gap:12px;align-items:center;}
+.refresh-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.refresh-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.last-updated{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
+
+main{padding:28px 32px;max-width:1200px;margin:0 auto;}
+
+/* LOADING */
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;}
+.loading-dots{display:flex;gap:8px;}
+.ld{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:ldpulse 1s infinite;}
+.ld:nth-child(2){animation-delay:.2s;}.ld:nth-child(3){animation-delay:.4s;}
+@keyframes ldpulse{0%,100%{opacity:.2;transform:scale(.7);}50%{opacity:1;transform:scale(1);}}
+.loading-text{font-size:.88rem;color:var(--muted);}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.kpi-val{font-size:2.2rem;font-weight:800;color:var(--accent);line-height:1;}
+.kpi-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-top:6px;}
+.kpi-sub{font-size:.75rem;color:var(--muted);margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+
+/* SECTION HEADERS */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:28px;}
+.section-hdr h2{font-size:.88rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
+.section-hdr span{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
+
+/* REP TABLE */
+.rep-table{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;}
+.rt-header{background:var(--surface);display:grid;grid-template-columns:1fr 80px 80px 80px 100px 100px 120px;gap:0;padding:10px 18px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
+.rt-row{display:grid;grid-template-columns:1fr 80px 80px 80px 100px 100px 120px;gap:0;padding:12px 18px;border-top:1px solid var(--border);align-items:center;transition:background .15s;cursor:pointer;}
+.rt-row:hover{background:rgba(255,255,255,.02);}
+.rt-row.expanded{background:rgba(79,195,247,.04);}
+.rt-name{font-weight:700;font-size:.88rem;}
+.rt-sessions{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--muted);text-align:center;}
+.rt-score{font-family:'IBM Plex Mono',monospace;font-size:.85rem;font-weight:600;text-align:center;}
+.rt-grade{text-align:center;}
+.grade-pill{display:inline-block;padding:2px 10px;border-radius:10px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;}
+.gA{background:rgba(102,187,106,.15);color:var(--success);}
+.gB{background:rgba(79,195,247,.15);color:var(--accent2);}
+.gC{background:rgba(245,166,35,.15);color:var(--accent);}
+.gD{background:rgba(239,83,80,.15);color:var(--error);}
+.rt-time{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);text-align:center;}
+.rt-last{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);text-align:center;}
+.rt-trend{text-align:center;font-size:.8rem;}
+
+/* REP DETAIL EXPAND */
+.rep-detail{display:none;padding:16px 18px 18px;border-top:1px solid var(--border);background:rgba(0,0,0,.15);}
+.rep-detail.show{display:block;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.detail-section h4{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;}
+.mod-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;font-size:.78rem;}
+.mod-bar-label{width:130px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
+.mod-bar-track{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.mod-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.mod-bar-pct{width:36px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
+.session-list{max-height:160px;overflow-y:auto;}
+.session-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);}
+.session-item:last-child{border-bottom:none;}
+.session-item span:first-child{color:var(--text);}
+
+/* MISSED QUESTIONS */
+.missed-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.missed-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.missed-card-rank{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--muted);margin-bottom:4px;}
+.missed-card-subject{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4;}
+.missed-card-meta{display:flex;gap:10px;align-items:center;}
+.missed-pct{font-size:1.3rem;font-weight:800;color:var(--error);}
+.missed-count{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--muted);}
+.missed-mod{font-family:'IBM Plex Mono',monospace;font-size:.68rem;padding:2px 8px;border-radius:8px;}
+
+/* TREND CHART */
+.trend-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;}
+.trend-empty{text-align:center;color:var(--muted);font-size:.85rem;padding:40px 0;}
+canvas{width:100%;height:200px;}
+
+/* NO DATA */
+.no-data{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:40px;text-align:center;color:var(--muted);}
+.no-data h3{font-size:1rem;margin-bottom:8px;color:var(--text);}
+.no-data p{font-size:.85rem;line-height:1.6;}
+
+@media(max-width:800px){
+  main{padding:16px;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+  .rt-header,.rt-row{grid-template-columns:1fr 60px 60px 80px;}
+  .rt-time,.rt-sessions,.rt-trend{display:none;}
+  .missed-grid{grid-template-columns:1fr;}
+  .detail-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Cargo<span>Quotes</span></div>
+    <div class="logo-sub">TRAINER DASHBOARD</div>
+  </div>
+  <div class="hdr-right">
+    <span class="last-updated" id="lastUpdated">Loading...</span>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+  <div id="loading">
+    <div class="loading-dots"><div class="ld"></div><div class="ld"></div><div class="ld"></div></div>
+    <div class="loading-text">Loading training data...</div>
+  </div>
+  <div id="dashContent" style="display:none"></div>
+</main>
+
+<script>
+const SB_URL = 'https://qmiezaefqoqtxxwuibrx.supabase.co';
+const SB_KEY = 'sb_publishable_Wpsb8LoctfiinNPNcQ_c2g_nzzJ--oC';
+
+const MOD_LABELS = {ltl:'LTL',tl:'Truckload',either:'Either Way',adv:'Advanced',ct:'Critical Thinking'};
+const MOD_COLORS_HEX = {ltl:'#9b59b6',tl:'#e67e22',either:'#1abc9c',adv:'#e74c3c',ct:'#f39c12'};
+
+async function fetchSessions() {
+  const res = await fetch(`${SB_URL}/rest/v1/training_sessions?order=completed_at.desc&limit=500`, {
+    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+function gradeFromPct(pct) {
+  if (pct >= 90) return 'A';
+  if (pct >= 75) return 'B';
+  if (pct >= 60) return 'C';
+  return 'D';
+}
+
+function gradeClass(g) {
+  return {A:'gA',B:'gB',C:'gC',D:'gD'}[g] || 'gD';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${m}m ${s}s`;
+}
+
+function scoreColor(pct) {
+  if (pct >= 80) return 'var(--success)';
+  if (pct >= 60) return 'var(--accent)';
+  return 'var(--error)';
+}
+
+function trendArrow(sessions) {
+  if (sessions.length < 2) return '—';
+  const recent = sessions.slice(0,3).reduce((a,s) => a + s.pct, 0) / Math.min(3, sessions.length);
+  const older = sessions.slice(-3).reduce((a,s) => a + s.pct, 0) / Math.min(3, sessions.length);
+  if (recent > older + 5) return '<span style="color:var(--success)">↑ Improving</span>';
+  if (recent < older - 5) return '<span style="color:var(--error)">↓ Declining</span>';
+  return '<span style="color:var(--muted)">→ Steady</span>';
+}
+
+function buildMissedMap(sessions) {
+  const map = {}; // exerciseId -> {subject, mod, failed, total}
+  sessions.forEach(s => {
+    let details = [];
+    try { details = JSON.parse(s.question_details || '[]'); } catch(e){}
+    details.forEach(q => {
+      if (!map[q.exercise_id]) map[q.exercise_id] = {subject: q.subject, mod: q.module, failed: 0, total: 0};
+      if (!q.skipped) {
+        map[q.exercise_id].total++;
+        if (!q.passed && !q.revealed) map[q.exercise_id].failed++;
+      }
+    });
+  });
+  return Object.entries(map)
+    .filter(([,v]) => v.total >= 2)
+    .map(([id,v]) => ({id, ...v, failPct: Math.round(v.failed/v.total*100)}))
+    .sort((a,b) => b.failPct - a.failPct)
+    .slice(0, 10);
+}
+
+function buildRepMap(sessions) {
+  const reps = {};
+  sessions.forEach(s => {
+    const name = s.trainee_name || 'Unknown';
+    if (!reps[name]) reps[name] = [];
+    reps[name].push(s);
+  });
+  return reps;
+}
+
+function renderTrendChart(sessions) {
+  // Returns SVG sparkline of last 10 sessions avg score
+  const pts = sessions.slice(0,20).reverse().map(s => s.pct);
+  if (pts.length < 2) return '<div class="trend-empty">Not enough sessions yet for trend data.</div>';
+  const W = 600, H = 120, pad = 10;
+  const minV = Math.min(...pts) - 5, maxV = Math.max(...pts) + 5;
+  const xStep = (W - pad*2) / (pts.length - 1);
+  const yScale = (v) => H - pad - ((v - minV) / (maxV - minV)) * (H - pad*2);
+  const points = pts.map((v,i) => `${pad + i*xStep},${yScale(v)}`).join(' ');
+  const area = `${pad},${H-pad} ` + points + ` ${pad + (pts.length-1)*xStep},${H-pad}`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:120px">
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f5a623" stop-opacity=".3"/><stop offset="100%" stop-color="#f5a623" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${area}" fill="url(#tg)"/>
+    <polyline points="${points}" fill="none" stroke="#f5a623" stroke-width="2" stroke-linejoin="round"/>
+    ${pts.map((v,i) => `<circle cx="${pad+i*xStep}" cy="${yScale(v)}" r="3" fill="#f5a623"/>
+      <text x="${pad+i*xStep}" y="${yScale(v)-7}" text-anchor="middle" font-size="9" fill="#7a8499" font-family="IBM Plex Mono">${v}%</text>`).join('')}
+    <text x="${pad}" y="${H-1}" font-size="8" fill="#7a8499" font-family="IBM Plex Mono">Oldest</text>
+    <text x="${W-pad}" y="${H-1}" font-size="8" fill="#7a8499" font-family="IBM Plex Mono" text-anchor="end">Latest</text>
+  </svg>`;
+}
+
+function renderRepRow(name, repSessions, idx) {
+  const latest = repSessions[0];
+  const avgPct = Math.round(repSessions.reduce((a,s)=>a+s.pct,0)/repSessions.length);
+  const grade = gradeFromPct(avgPct);
+  const avgTime = Math.round(repSessions.reduce((a,s)=>a+(s.elapsed_seconds||0),0)/repSessions.length);
+  const lastDate = formatDate(latest.completed_at);
+  const trend = trendArrow(repSessions);
+
+  // Module breakdown from all sessions
+  const modTotals = {};
+  repSessions.forEach(s => {
+    let mods = {};
+    try { mods = JSON.parse(s.mod_scores || '{}'); } catch(e){}
+    Object.entries(mods).forEach(([m,v]) => {
+      if (!modTotals[m]) modTotals[m] = {pass:0,total:0};
+      modTotals[m].pass += v.pass;
+      modTotals[m].total += v.total;
+    });
+  });
+
+  const modBars = Object.entries(modTotals).map(([m,v]) => {
+    const pct = v.total ? Math.round(v.pass/v.total*100) : 0;
+    const color = MOD_COLORS_HEX[m] || '#7a8499';
+    return `<div class="mod-bar-row">
+      <span class="mod-bar-label">${MOD_LABELS[m]||m}</span>
+      <div class="mod-bar-track"><div class="mod-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="mod-bar-pct">${pct}%</span>
+    </div>`;
+  }).join('');
+
+  const sessionList = repSessions.slice(0,8).map(s => `
+    <div class="session-item">
+      <span>${formatDate(s.completed_at)}</span>
+      <span>${s.score}/${s.total} (${s.pct}%)</span>
+      <span>${s.elapsed_display || formatTime(s.elapsed_seconds||0)}</span>
+    </div>`).join('');
+
+  const sparkPts = repSessions.slice(0,8).reverse().map(s=>s.pct);
+  let sparkSVG = '';
+  if (sparkPts.length >= 2) {
+    const W=80,H=24,pad=2;
+    const minV=Math.min(...sparkPts),maxV=Math.max(...sparkPts)||100;
+    const xStep=(W-pad*2)/(sparkPts.length-1);
+    const yS=(v)=>H-pad-((v-minV)/Math.max(maxV-minV,1))*(H-pad*2);
+    const pts=sparkPts.map((v,i)=>`${pad+i*xStep},${yS(v)}`).join(' ');
+    sparkSVG=`<svg viewBox="0 0 ${W} ${H}" width="80" height="24"><polyline points="${pts}" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+  }
+
+  return `
+  <div class="rt-row" onclick="toggleDetail('rep${idx}')">
+    <span class="rt-name">${name}</span>
+    <span class="rt-sessions">${repSessions.length}</span>
+    <span class="rt-score" style="color:${scoreColor(avgPct)}">${avgPct}%</span>
+    <span class="rt-grade"><span class="grade-pill ${gradeClass(grade)}">${grade}</span></span>
+    <span class="rt-time">${formatTime(avgTime)}</span>
+    <span class="rt-last">${lastDate}</span>
+    <span class="rt-trend">${sparkSVG || trend}</span>
+  </div>
+  <div class="rep-detail" id="rep${idx}">
+    <div class="detail-grid">
+      <div class="detail-section">
+        <h4>Score by Module</h4>
+        ${modBars || '<p style="color:var(--muted);font-size:.8rem">No module data yet.</p>'}
+      </div>
+      <div class="detail-section">
+        <h4>Session History</h4>
+        <div class="session-list">${sessionList}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  const row = el.previousElementSibling;
+  if (el.classList.contains('show')) {
+    el.classList.remove('show');
+    row.classList.remove('expanded');
+  } else {
+    el.classList.add('show');
+    row.classList.add('expanded');
+  }
+}
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'flex';
+  document.getElementById('dashContent').style.display = 'none';
+
+  let sessions = [];
+  try {
+    sessions = await fetchSessions();
+  } catch(e) {
+    document.getElementById('loading').innerHTML = `
+      <div style="text-align:center">
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Could not load data</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-bottom:16px">${e.message}</div>
+        <button class="refresh-btn" onclick="loadData()">Try Again</button>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+  if (sessions.length === 0) {
+    document.getElementById('dashContent').style.display = 'block';
+    document.getElementById('dashContent').innerHTML = `
+      <div class="no-data">
+        <h3>No training sessions yet</h3>
+        <p>Once your reps complete training sessions, their results will appear here automatically.<br>Share the training tool link and check back after the first session.</p>
+      </div>`;
+    return;
+  }
+
+  const repMap = buildRepMap(sessions);
+  const repNames = Object.keys(repMap).sort();
+  const totalSessions = sessions.length;
+  const uniqueReps = repNames.length;
+  const avgScore = Math.round(sessions.reduce((a,s)=>a+s.pct,0)/sessions.length);
+  const avgTime = Math.round(sessions.reduce((a,s)=>a+(s.elapsed_seconds||0),0)/sessions.length);
+  const missed = buildMissedMap(sessions);
+
+  // KPIs
+  const kpiHTML = `
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-val">${uniqueReps}</div>
+        <div class="kpi-lbl">Trainees</div>
+        <div class="kpi-sub">have completed sessions</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">${totalSessions}</div>
+        <div class="kpi-lbl">Total Sessions</div>
+        <div class="kpi-sub">across all reps</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val" style="color:${scoreColor(avgScore)}">${avgScore}%</div>
+        <div class="kpi-lbl">Avg Score</div>
+        <div class="kpi-sub">all sessions</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">${formatTime(avgTime)}</div>
+        <div class="kpi-lbl">Avg Time</div>
+        <div class="kpi-sub">per session</div>
+      </div>
+    </div>`;
+
+  // Rep table
+  const repRowsHTML = repNames.map((name, i) => renderRepRow(name, repMap[name], i)).join('');
+  const repTableHTML = `
+    <div class="section-hdr">
+      <h2>Rep Performance</h2>
+      <span>Click any row to expand</span>
+    </div>
+    <div class="rep-table">
+      <div class="rt-header">
+        <span>Trainee</span>
+        <span style="text-align:center">Sessions</span>
+        <span style="text-align:center">Avg Score</span>
+        <span style="text-align:center">Grade</span>
+        <span style="text-align:center">Avg Time</span>
+        <span style="text-align:center">Last Active</span>
+        <span style="text-align:center">Trend</span>
+      </div>
+      ${repRowsHTML}
+    </div>`;
+
+  // Most missed
+  const missedHTML = missed.length ? `
+    <div class="section-hdr">
+      <h2>Most Missed Exercises</h2>
+      <span>Based on all sessions</span>
+    </div>
+    <div class="missed-grid">
+      ${missed.slice(0,8).map((m,i) => {
+        const color = MOD_COLORS_HEX[m.mod] || '#7a8499';
+        return `<div class="missed-card">
+          <div class="missed-card-rank">#${i+1} Most Missed</div>
+          <div class="missed-card-subject">${m.subject}</div>
+          <div class="missed-card-meta">
+            <span class="missed-pct">${m.failPct}%</span>
+            <span class="missed-count">fail rate (${m.failed}/${m.total} attempts)</span>
+            <span class="missed-mod" style="background:${color}22;color:${color}">${MOD_LABELS[m.mod]||m.mod}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  // Trend chart (all sessions)
+  const trendHTML = `
+    <div class="section-hdr">
+      <h2>Score Trend — All Sessions</h2>
+      <span>Most recent 20 sessions</span>
+    </div>
+    <div class="trend-wrap">
+      ${renderTrendChart(sessions)}
+    </div>`;
+
+  document.getElementById('dashContent').innerHTML = kpiHTML + repTableHTML + missedHTML + trendHTML;
+  document.getElementById('dashContent').style.display = 'block';
+}
+
+// Auto-load on open
+loadData();
+</script>
+</body>
+</html>
