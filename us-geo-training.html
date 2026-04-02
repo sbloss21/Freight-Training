@@ -136,6 +136,13 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
         onkeydown="if(event.key==='Enter')startGame()"/>
     </div>
+    <div style="width:100%;margin-bottom:14px;display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(230,114,34,.06);border:1px solid rgba(230,114,34,.25);border-radius:8px;cursor:pointer;" onclick="toggleBeginner(this)" id="beginner-toggle">
+      <div style="width:18px;height:18px;border-radius:4px;border:2px solid var(--accent);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;" id="beginner-check"></div>
+      <div>
+        <div style="font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--accent);letter-spacing:.5px;">🔰 Beginner Mode — Show State Abbreviations as Hints</div>
+        <div style="font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-top:2px;">State labels always visible on the map. City hover names enabled. Great for learning before going blind.</div>
+      </div>
+    </div>
     <button class="start-btn" onclick="startGame()">START TRAINING SESSION →</button>
   </div>
 </div>
@@ -452,6 +459,7 @@ let gMode="states",questions=[],curQ=0,score=0,streak=0,correct=0,answered=false
 let tiv=null,tleft=10,mapReady=false;
 let stateLabelsVisible=false;
 let cityTooltipsVisible=false;
+let beginnerMode=false;
 const TOTAL=25;
 
 // Session tracking
@@ -579,6 +587,13 @@ function restartGame(){
   updScore();loadQ();
 }
 function showSplash(){document.getElementById("results").style.display="none";document.getElementById("splash").style.display="flex";}
+function toggleBeginner(el){
+  beginnerMode=!beginnerMode;
+  const chk=document.getElementById("beginner-check");
+  chk.style.background=beginnerMode?"var(--accent)":"transparent";
+  chk.innerHTML=beginnerMode?"<svg width='10' height='8' viewBox='0 0 10 8' fill='none'><polyline points='1,4 4,7 9,1' stroke='#0d0f14' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>":"";
+  el.style.background=beginnerMode?"rgba(230,114,34,.14)":"rgba(230,114,34,.06)";
+}
 
 function loadQ(){
   if(curQ>=questions.length){showResults();return;}
@@ -592,8 +607,15 @@ function loadQ(){
     document.getElementById("instrtxt").textContent="The map is blank — find and click the correct state.";
     document.getElementById("maphint").textContent="No hints — find the state and click it!";
     d3.select("#cities-g").style("display","none");
-    d3.select("#labels-g").style("display","none"); // hide abbreviations
-    stateLabelsVisible=false;
+    if(beginnerMode){
+      d3.select("#labels-g").style("display",null);
+      stateLabelsVisible=true;
+      document.getElementById("instrtxt").textContent="State labels shown — click the correct state.";
+      document.getElementById("maphint").textContent="State abbreviations visible · Click to answer";
+    } else {
+      d3.select("#labels-g").style("display","none"); // hide abbreviations
+      stateLabelsVisible=false;
+    }
     cityTooltipsVisible=false;
   }else{
     document.getElementById("qtxt").textContent="Find "+q.target.name+" on the map";
@@ -603,7 +625,13 @@ function loadQ(){
     d3.select("#cities-g").style("display",null);
     d3.select("#labels-g").style("display","none");
     stateLabelsVisible=false;
-    cityTooltipsVisible=false; // no hover names until after answering
+    if(beginnerMode){
+      cityTooltipsVisible=true;
+      document.getElementById("instrtxt").textContent="Hover dots to see city names, then click the correct city.";
+      document.getElementById("maphint").textContent="Hover dots for city names · Click to answer";
+    } else {
+      cityTooltipsVisible=false; // no hover names until after answering
+    }
   }
   if(gMode==="timed"){document.getElementById("ttrack").style.display="block";startTimer();}
   else document.getElementById("ttrack").style.display="none";
