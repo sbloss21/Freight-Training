@@ -390,6 +390,22 @@
     </div>
   </div>
 
+  <!-- GEOGRAPHY SECTION -->
+  <div style="margin-top:16px">
+    <div class="section-card fade-in" style="animation-delay:.21s;border-color:rgba(45,212,191,.2)">
+      <div class="card-header" style="border-bottom-color:rgba(45,212,191,.15)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.1rem">🗺️</span>
+          <span class="card-title" style="color:#2dd4bf">Geography Training</span>
+        </div>
+        <div class="card-meta">
+          <span class="card-badge" id="geoCount" style="background:rgba(45,212,191,.1);color:#2dd4bf">—</span>
+        </div>
+      </div>
+      <div id="geoSection"><div class="loading-state"><div class="loading-spinner"></div></div></div>
+    </div>
+  </div>
+
   <!-- ACTIVITY FEED -->
   <div style="margin-top:16px">
     <div class="section-card fade-in" style="animation-delay:.22s">
@@ -407,8 +423,9 @@
 const SB_URL = 'https://qmiezaefqoqtxxwuibrx.supabase.co';
 const SB_KEY = 'sb_publishable_Wpsb8LoctfiinNPNcQ_c2g_nzzJ--oC';
 
-const MOD_LABELS = { ltl:'LTL', tl:'Truckload', adv:'Advanced', ct:'Critical Thinking', either:'Either', ai:'AI Reply' };
-const MOD_COLORS = { ltl:'var(--ltl)', tl:'var(--tl)', adv:'var(--adv)', ct:'var(--ct)', either:'var(--either)', ai:'var(--ai)' };
+const MOD_LABELS = { ltl:'LTL', tl:'Truckload', adv:'Advanced', ct:'Critical Thinking', either:'Either', ai:'AI Reply', states:'States', cities:'Cities', mixed:'Mixed', speed:'Speed Round' };
+const MOD_COLORS = { ltl:'var(--ltl)', tl:'var(--tl)', adv:'var(--adv)', ct:'var(--ct)', either:'var(--either)', ai:'var(--ai)', states:'#2dd4bf', cities:'#2dd4bf', mixed:'#2dd4bf', speed:'#f59e0b' };
+const GEO_MODES = new Set(['states','cities','mixed','speed']);
 
 let allSessions = [];
 let currentFilter = 'all';
@@ -455,13 +472,21 @@ function setFilter(val, el) {
 }
 
 function renderAll(sessions) {
-  renderKPIs(sessions);
+  const freight = sessions.filter(s => !isGeoSession(s));
+  const geo = sessions.filter(s => isGeoSession(s));
+  renderKPIs(freight.length ? freight : sessions);
   renderSessionsTable(sessions);
-  renderLeaderboard(sessions);
-  renderGradeDist(sessions);
-  renderModBreakdown(sessions);
-  renderStatSidebar(sessions);
+  renderLeaderboard(freight.length ? freight : sessions);
+  renderGradeDist(freight.length ? freight : sessions);
+  renderModBreakdown(freight.length ? freight : sessions);
+  renderStatSidebar(freight.length ? freight : sessions);
   renderActivityFeed(sessions);
+  renderGeoSection(geo);
+}
+
+function isGeoSession(s) {
+  const mods = (s.modules_selected||'').split(',').map(m=>m.trim()).filter(Boolean);
+  return mods.length > 0 && mods.every(m => GEO_MODES.has(m));
 }
 
 // ── SPARKLINES ─────────────────────────
@@ -873,6 +898,97 @@ function timeAgo(date) {
   if (secs < 86400) return Math.floor(secs/3600)+'h ago';
   if (secs < 604800) return Math.floor(secs/86400)+'d ago';
   return formatDate(date);
+}
+
+
+// ── GEOGRAPHY SECTION ─────────────────
+function renderGeoSection(geoSessions) {
+  const el = document.getElementById('geoSection');
+  set('geoCount', geoSessions.length + ' sessions');
+  if (!geoSessions.length) {
+    el.innerHTML = '<div class="empty-state" style="color:var(--muted)">No Geography Training sessions recorded yet. <a href="us-geo-training.html" style="color:#2dd4bf;text-decoration:none">Start a session →</a></div>';
+    return;
+  }
+  const n = geoSessions.length;
+  const trainees = new Set(geoSessions.map(s => (s.trainee_name||'').toLowerCase().trim()));
+  const avgPct = Math.round(geoSessions.reduce((a,s)=>a+(s.pct||0),0)/n);
+  const best = Math.max(...geoSessions.map(s=>s.pct||0));
+  const bestName = geoSessions.find(s=>s.pct===best)?.trainee_name||'—';
+
+  // Mode breakdown
+  const modeCounts = {};
+  geoSessions.forEach(s => {
+    (s.modules_selected||'').split(',').forEach(m => {
+      m = m.trim();
+      if (m) modeCounts[m] = (modeCounts[m]||0)+1;
+    });
+  });
+
+  // Per-trainee geo stats
+  const byTrainee = {};
+  geoSessions.forEach(s => {
+    const key = (s.trainee_name||'Unknown').trim();
+    if (!byTrainee[key]) byTrainee[key] = { name:key, sessions:0, totalPct:0, best:0 };
+    byTrainee[key].sessions++;
+    byTrainee[key].totalPct += (s.pct||0);
+    if ((s.pct||0) > byTrainee[key].best) byTrainee[key].best = s.pct;
+  });
+  const leaderRows = Object.values(byTrainee)
+    .map(t => ({...t, avg: Math.round(t.totalPct/t.sessions)}))
+    .sort((a,b) => b.avg - a.avg)
+    .slice(0,8)
+    .map((t,i) => {
+      const c = pctToColor(t.avg);
+      return `<div style="display:grid;grid-template-columns:22px 1fr 50px 45px;align-items:center;gap:8px;padding:8px 20px;border-bottom:1px solid rgba(45,212,191,.07)">
+        <span style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted)">${i+1}</span>
+        <div>
+          <div style="font-weight:600;font-size:.82rem">${t.name}</div>
+          <div style="font-size:.68rem;color:var(--muted)">${t.sessions} sess · best ${t.best}%</div>
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:${c};text-align:right">${t.avg}%</span>
+        <span style="text-align:right"><span class="grade-pill g-${t.avg>=90?'A':t.avg>=75?'B':t.avg>=60?'C':'D'}">${t.avg>=90?'A':t.avg>=75?'B':t.avg>=60?'C':'D'}</span></span>
+      </div>`;
+    }).join('');
+
+  const modeRows = Object.entries(modeCounts).map(([m,c]) => {
+    const label = MOD_LABELS[m]||m;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(45,212,191,.06)">
+      <span style="font-size:.78rem;color:#2dd4bf;font-weight:600">${label}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--muted)">${c} session${c!==1?'s':''}</span>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid rgba(45,212,191,.1)">
+      <div style="padding:16px 20px;border-right:1px solid rgba(45,212,191,.1)">
+        <div style="font-size:.63rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Sessions</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#2dd4bf">${n}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${trainees.size} trainee${trainees.size!==1?'s':''}</div>
+      </div>
+      <div style="padding:16px 20px;border-right:1px solid rgba(45,212,191,.1)">
+        <div style="font-size:.63rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Avg Score</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:${pctToColor(avgPct)}">${avgPct}%</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">all geography sessions</div>
+      </div>
+      <div style="padding:16px 20px;">
+        <div style="font-size:.63rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px">Top Score</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:${pctToColor(best)}">${best}%</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:2px">${bestName.length>18?bestName.slice(0,16)+'…':bestName}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 220px;border-bottom:1px solid rgba(45,212,191,.1)">
+      <div>
+        <div style="padding:12px 20px 6px;font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#2dd4bf;font-weight:600;border-right:1px solid rgba(45,212,191,.1)">Geo Leaderboard</div>
+        ${leaderRows || '<div class="empty-state" style="padding:16px">No data</div>'}
+      </div>
+      <div style="padding:12px 20px">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:#2dd4bf;font-weight:600;margin-bottom:8px">Game Modes Used</div>
+        ${modeRows || '<div style="color:var(--muted);font-size:.75rem">No data</div>'}
+        <div style="margin-top:14px">
+          <a href="us-geo-training.html" style="display:inline-flex;align-items:center;gap:6px;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.25);border-radius:7px;padding:8px 14px;text-decoration:none;color:#2dd4bf;font-size:.75rem;font-weight:600;transition:all .2s" onmouseover="this.style.background='rgba(45,212,191,.16)'" onmouseout="this.style.background='rgba(45,212,191,.08)'">🗺️ Open Geography Training →</a>
+        </div>
+      </div>
+    </div>`;
 }
 
 loadData();
