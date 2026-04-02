@@ -310,6 +310,7 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 let gMode="states",questions=[],curQ=0,score=0,streak=0,correct=0,answered=false;
 let tiv=null,tleft=10,mapReady=false;
 let stateLabelsVisible=false;
+let cityTooltipsVisible=false;
 const TOTAL=20;
 
 // Session tracking
@@ -379,7 +380,7 @@ async function initMap(){
       c._x=pos[0]; c._y=pos[1];
       const g=cg.append("g").style("cursor","pointer")
         .on("click",()=>onCity(c.id))
-        .on("mouseenter",e=>showTip(e,c.name+", "+c.state))
+        .on("mouseenter",e=>{if(cityTooltipsVisible)showTip(e,c.name+", "+c.state);})
         .on("mousemove",moveTip).on("mouseleave",hideTip);
       g.append("circle").attr("class","city-dot").attr("id","cc-"+c.id)
         .attr("cx",c._x).attr("cy",c._y).attr("r",4);
@@ -450,15 +451,17 @@ function loadQ(){
     document.getElementById("maphint").textContent="No hints — find the state and click it!";
     d3.select("#cities-g").style("display","none");
     d3.select("#labels-g").style("display","none"); // hide abbreviations
-    stateLabelsVisible=false; // disable hover tooltips for states
+    stateLabelsVisible=false;
+    cityTooltipsVisible=false;
   }else{
     document.getElementById("qtxt").textContent="Find "+q.target.name+" on the map";
     document.getElementById("qbadge").textContent="CITY";
     document.getElementById("instrtxt").textContent="No labels shown — hover a dot to reveal its name, then click the correct city.";
     document.getElementById("maphint").textContent="Hover dots for city names · Click to answer";
     d3.select("#cities-g").style("display",null);
-    d3.select("#labels-g").style("display","none"); // hide state abbreviations — would give away the answer
-    stateLabelsVisible=false; // disable state name tooltips too — same reason
+    d3.select("#labels-g").style("display","none");
+    stateLabelsVisible=false;
+    cityTooltipsVisible=false; // no hover names until after answering
   }
   if(gMode==="timed"){document.getElementById("ttrack").style.display="block";startTimer();}
   else document.getElementById("ttrack").style.display="none";
@@ -489,6 +492,7 @@ function doTimeout(){
     d3.select("#cl-"+q.target.id).classed("revealed",true);
     d3.select("#labels-g").style("display",null);
     stateLabelsVisible=true;
+    cityTooltipsVisible=true;
   }
   showFb(false,"Time's up! — "+q.target.name,q.type==="city"?q.target.fact:SFACTS[q.target.abbr]||"");
 }
@@ -511,9 +515,10 @@ function onCity(cid){
   const ok=cid===q.target.id;
   d3.select("#cc-"+cid).attr("r",7).classed(ok?"correct":"wrong",true);
   if(!ok){d3.select("#cc-"+q.target.id).attr("r",8).classed("correct",true);d3.select("#cl-"+q.target.id).classed("revealed",true);}
-  // Reveal state labels after answering so rep can learn the location in context
+  // Reveal state labels + city tooltips after answering so rep can learn the location
   d3.select("#labels-g").style("display",null);
   stateLabelsVisible=true;
+  cityTooltipsVisible=true;
   doAnswer(ok,q.target.name,q.target.fact);
 }
 
