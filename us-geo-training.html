@@ -102,7 +102,7 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
 .city-dot.correct{fill:#34d399;}
 .city-dot.wrong{fill:#f87171;}
 .city-label{font-family:'IBM Plex Mono',monospace;fill:#1e3545;pointer-events:none;user-select:none;}
-.city-label.revealed{fill:#4a7a9a;}
+.city-label.revealed{fill:#4a7a9a !important;}
 .fb{width:100%;max-width:940px;border-radius:8px;padding:11px 17px;display:none;align-items:center;gap:11px;animation:fbin .2s ease;}
 .fb.correct{background:var(--gdim);border:1px solid rgba(52,211,153,.3);color:var(--green);display:flex;}
 .fb.wrong{background:var(--rdim);border:1px solid rgba(248,113,113,.3);color:var(--red);display:flex;}
@@ -381,11 +381,12 @@ async function initMap(){
       const g=cg.append("g").style("cursor","pointer")
         .on("click",()=>onCity(c.id))
         .on("mouseenter",e=>{if(cityTooltipsVisible)showTip(e,c.name+", "+c.state);})
-        .on("mousemove",moveTip).on("mouseleave",hideTip);
+        .on("mousemove",e=>{if(cityTooltipsVisible)moveTip(e);})
+        .on("mouseleave",()=>{if(cityTooltipsVisible)hideTip();});
       g.append("circle").attr("class","city-dot").attr("id","cc-"+c.id)
         .attr("cx",c._x).attr("cy",c._y).attr("r",4);
       g.append("text").attr("class","city-label").attr("id","cl-"+c.id)
-        .attr("x",c._x+6).attr("y",c._y+3).attr("font-size","5.5px").text(c.name);
+        .attr("x",c._x+6).attr("y",c._y+3).attr("font-size","5.5px").attr("fill","transparent").text(c.name);
     });
 
     mapReady=true;
@@ -493,6 +494,7 @@ function doTimeout(){
     d3.select("#labels-g").style("display",null);
     stateLabelsVisible=true;
     cityTooltipsVisible=true;
+    d3.selectAll(".city-label").attr("fill","#2a4055");
   }
   showFb(false,"Time's up! — "+q.target.name,q.type==="city"?q.target.fact:SFACTS[q.target.abbr]||"");
 }
@@ -519,6 +521,7 @@ function onCity(cid){
   d3.select("#labels-g").style("display",null);
   stateLabelsVisible=true;
   cityTooltipsVisible=true;
+  d3.selectAll(".city-label").attr("fill","#2a4055"); // make all city names visible
   doAnswer(ok,q.target.name,q.target.fact);
 }
 
@@ -547,7 +550,8 @@ function clearFb(){const el=document.getElementById("fb");el.className="fb";el.s
 function resetHL(){
   d3.selectAll(".state-path").classed("correct",false).classed("wrong",false).classed("show-correct",false);
   d3.selectAll(".city-dot").attr("r",4).classed("correct",false).classed("wrong",false);
-  d3.selectAll(".city-label").classed("revealed",false);
+  d3.selectAll(".city-label").classed("revealed",false).attr("fill","transparent"); // hide until answered
+  hideTip(); // clear any lingering tooltip
 }
 function updScore(){document.getElementById("scoredisp").textContent=score;document.getElementById("streakdisp").textContent=streak;}
 function nextQ(){curQ++;loadQ();}
