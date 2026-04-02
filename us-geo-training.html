@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CargoQuotes — US Geography Training</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<style>
+:root{
+  --bg:#111214;--surface:#18191c;--card:#1f2124;--card2:#252629;
+  --border:#2e3035;--border2:#3a3d44;
+  --accent:#e67222;--accent2:#f5a623;--adim:rgba(230,114,34,.15);
+  --blue:#60a5fa;--bdim:rgba(96,165,250,.12);
+  --green:#34d399;--gdim:rgba(52,211,153,.15);
+  --red:#f87171;--rdim:rgba(248,113,113,.15);
+  --yellow:#fbbf24;
+  --text:#e2e5ed;--text2:#9aa3b5;--text3:#5a6275;
+  --mono:'IBM Plex Mono',monospace;--sans:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 40px,rgba(255,255,255,.011) 40px,rgba(255,255,255,.011) 41px);pointer-events:none;z-index:0;}
+.hdr{position:relative;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px;height:52px;flex-shrink:0;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),transparent);}
+.brand{display:flex;align-items:center;gap:9px;}
+.bicon{width:29px;height:29px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.62rem;font-weight:700;color:#fff;letter-spacing:-1px;}
+.bname{font-family:var(--mono);font-size:.68rem;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;}
+.bsep{color:var(--border2);}
+.bmod{font-family:var(--mono);font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;}
+.hdr-r{margin-left:auto;display:flex;align-items:center;gap:9px;}
+.pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:3px 13px;font-family:var(--mono);font-size:.61rem;color:var(--text2);display:flex;align-items:center;gap:7px;}
+.pv{font-weight:700;font-size:.7rem;}
+.ps .pv{color:var(--accent);}
+.pk .pv{color:var(--yellow);}
+#splash{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+#splash::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-55deg,transparent,transparent 40px,rgba(255,255,255,.011) 40px,rgba(255,255,255,.011) 41px);pointer-events:none;}
+.sp-in{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;max-width:560px;width:100%;padding:0 22px;}
+.sp-logo{display:flex;align-items:center;gap:11px;margin-bottom:26px;}
+.sp-licon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.9rem;font-weight:700;color:#fff;letter-spacing:-1px;}
+.sp-lname{font-family:var(--mono);font-size:.78rem;font-weight:600;color:var(--accent);letter-spacing:1px;text-transform:uppercase;}
+.sp-title{font-family:var(--sans);font-size:2.7rem;font-weight:800;color:var(--text);text-align:center;line-height:1.05;margin-bottom:7px;}
+.sp-title span{color:var(--accent);}
+.sp-sub{font-family:var(--mono);font-size:.64rem;color:var(--text3);text-align:center;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:14px;}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:15px 13px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .18s;transform-origin:left;}
+.mc:hover{border-color:var(--accent);background:var(--card2);}
+.mc:hover::before,.mc.sel::before{transform:scaleX(1);}
+.mc.sel{border-color:var(--accent);background:var(--adim);}
+.mc-icon{font-size:1.4rem;margin-bottom:5px;}
+.mc-label{font-family:var(--sans);font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:2px;}
+.mc-desc{font-family:var(--mono);font-size:.57rem;color:var(--text3);line-height:1.5;}
+.start-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;font-family:var(--sans);font-size:.95rem;font-weight:700;color:#fff;cursor:pointer;transition:opacity .15s,transform .1s;letter-spacing:.5px;}
+.start-btn:hover{opacity:.88;transform:translateY(-1px);}
+#results{position:fixed;inset:0;z-index:500;background:rgba(8,9,11,.96);display:none;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.rc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:34px;max-width:420px;width:90%;text-align:center;position:relative;overflow:hidden;}
+.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.rgrade{font-family:var(--sans);font-size:4.8rem;font-weight:800;line-height:1;margin-bottom:5px;}
+.rlbl{font-family:var(--mono);font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:2px;margin-bottom:22px;}
+.rstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:22px;}
+.sbox{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:12px 6px;}
+.snum{font-family:var(--sans);font-size:1.6rem;font-weight:800;color:var(--accent);}
+.slbl{font-family:var(--mono);font-size:.54rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.rmsg{font-family:var(--mono);font-size:.68rem;color:var(--text2);line-height:1.7;margin-bottom:22px;}
+.ract{display:flex;gap:9px;}
+.bp{flex:1;padding:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:7px;font-family:var(--sans);font-size:.88rem;font-weight:700;color:#fff;cursor:pointer;}
+.bp:hover{opacity:.87;}
+.bs{flex:1;padding:11px;background:transparent;border:1px solid var(--border2);border-radius:7px;font-family:var(--mono);font-size:.66rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.5px;}
+.bs:hover{border-color:var(--accent);color:var(--accent);}
+.main{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 14px 22px;gap:11px;}
+.pbar{width:100%;max-width:940px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease;}
+.ttrack{width:100%;max-width:940px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+.tfill{height:100%;background:var(--blue);transition:width .1s linear,background .5s;}
+.tfill.warn{background:var(--yellow);}
+.tfill.danger{background:var(--red);}
+.qcard{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:13px 19px;width:100%;max-width:940px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;}
+.qcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--accent),var(--accent2));}
+.qnum{font-family:var(--mono);font-size:.58rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;}
+.qsep{color:var(--border2);}
+.qtxt{font-family:var(--sans);font-size:1.05rem;font-weight:700;color:var(--text);flex:1;}
+.qbadge{font-family:var(--mono);font-size:.56rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;background:var(--adim);border:1px solid rgba(230,114,34,.25);border-radius:4px;padding:3px 8px;flex-shrink:0;}
+.instr{width:100%;max-width:940px;background:var(--bdim);border:1px solid rgba(96,165,250,.2);border-radius:6px;padding:6px 13px;font-family:var(--mono);font-size:.59rem;color:var(--blue);display:flex;align-items:center;gap:7px;}
+.mapwrap{width:100%;max-width:940px;background:#0a1520;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;box-shadow:0 6px 30px rgba(0,0,0,.6);}
+#map-svg{width:100%;height:auto;display:none;}
+.map-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:480px;gap:14px;font-family:var(--mono);font-size:.7rem;color:var(--text3);}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.map-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(10,21,32,.92);border:1px solid var(--border);border-radius:5px;padding:5px 13px;font-family:var(--mono);font-size:.57rem;color:var(--text3);backdrop-filter:blur(4px);pointer-events:none;white-space:nowrap;}
+/* D3 rendered elements */
+.state-path{fill:#1c2d42;stroke:#3a5570;stroke-width:0.5;cursor:pointer;transition:fill .15s;}
+.state-path:hover{fill:#26405e;}
+.state-path.correct{fill:rgba(52,211,153,.45)!important;stroke:#34d399!important;stroke-width:1.8!important;}
+.state-path.wrong{fill:rgba(248,113,113,.45)!important;stroke:#f87171!important;stroke-width:1.8!important;}
+.state-path.show-correct{fill:rgba(52,211,153,.45)!important;stroke:#34d399!important;stroke-width:1.8!important;}
+.state-label{font-family:'IBM Plex Mono',monospace;font-weight:700;fill:#4a6a88;text-anchor:middle;pointer-events:none;user-select:none;}
+.city-dot{fill:#2563eb;stroke:#0a1520;stroke-width:0.8;cursor:pointer;transition:fill .12s;}
+.city-dot:hover{fill:var(--accent);}
+.city-dot.correct{fill:#34d399;}
+.city-dot.wrong{fill:#f87171;}
+.city-label{font-family:'IBM Plex Mono',monospace;fill:#1e3545;pointer-events:none;user-select:none;}
+.city-label.revealed{fill:#4a7a9a;}
+.fb{width:100%;max-width:940px;border-radius:8px;padding:11px 17px;display:none;align-items:center;gap:11px;animation:fbin .2s ease;}
+.fb.correct{background:var(--gdim);border:1px solid rgba(52,211,153,.3);color:var(--green);display:flex;}
+.fb.wrong{background:var(--rdim);border:1px solid rgba(248,113,113,.3);color:var(--red);display:flex;}
+@keyframes fbin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.fbicon{font-size:1.05rem;flex-shrink:0;}
+.fbmain{flex:1;font-family:var(--mono);font-size:.71rem;line-height:1.5;}
+.fbfact{margin-top:3px;font-size:.6rem;opacity:.72;}
+.nextbtn{padding:7px 17px;background:var(--card2);border:1px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:.6rem;font-weight:600;color:var(--text);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .15s;flex-shrink:0;}
+.nextbtn:hover{border-color:var(--accent);color:var(--accent);}
+#tip{position:fixed;background:rgba(17,18,20,.96);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:.63rem;color:var(--text2);pointer-events:none;z-index:300;display:none;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="tip"></div>
+
+<div id="splash">
+  <div class="sp-in">
+    <div class="sp-logo"><div class="sp-licon">CQ</div><div class="sp-lname">CargoQuotes</div></div>
+    <div class="sp-title">US Geography<br><span>Training</span></div>
+    <div class="sp-sub">Rep Certification — Lanes &amp; Geography Module</div>
+    <div class="mgrid">
+      <div class="mc sel" onclick="selMode('states',this)"><div class="mc-icon">🗺️</div><div class="mc-label">States Only</div><div class="mc-desc">Click the correct state on a real US map. All 48 contiguous states.</div></div>
+      <div class="mc" onclick="selMode('cities',this)"><div class="mc-icon">📍</div><div class="mc-label">Cities Only</div><div class="mc-desc">Locate major US freight hub cities by clicking the correct dot.</div></div>
+      <div class="mc" onclick="selMode('mixed',this)"><div class="mc-icon">🔀</div><div class="mc-label">Mixed Mode</div><div class="mc-desc">States and cities combined — best for full certification prep.</div></div>
+      <div class="mc" onclick="selMode('timed',this)"><div class="mc-icon">⚡</div><div class="mc-label">Speed Round</div><div class="mc-desc">10 seconds per question. Race the clock — pressure training.</div></div>
+    </div>
+    <div style="width:100%;margin-bottom:12px;">
+      <label style="display:block;font-family:var(--mono);font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;">Your Name</label>
+      <input id="trainee-name" type="text" placeholder="First Last" autocomplete="name"
+        style="width:100%;padding:11px 14px;background:var(--card2);border:1px solid var(--border2);border-radius:7px;font-family:var(--mono);font-size:.88rem;color:var(--text);outline:none;transition:border .15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
+        onkeydown="if(event.key==='Enter')startGame()"/>
+    </div>
+    <button class="start-btn" onclick="startGame()">START TRAINING SESSION →</button>
+  </div>
+</div>
+
+<div id="results">
+  <div class="rc">
+    <div class="rgrade" id="rgrade">—</div>
+    <div class="rlbl" id="rlbl">Session Complete</div>
+    <div class="rstats">
+      <div class="sbox"><div class="snum" id="rcorrect">0</div><div class="slbl">Correct</div></div>
+      <div class="sbox"><div class="snum" id="rtotal">0</div><div class="slbl">Total</div></div>
+      <div class="sbox"><div class="snum" id="rpct">0%</div><div class="slbl">Accuracy</div></div>
+    </div>
+    <div class="rmsg" id="rmsg"></div>
+    <!-- Submit strip -->
+    <div id="submit-strip" style="margin-bottom:16px;">
+      <div id="submit-status" style="display:none;font-family:var(--mono);font-size:.65rem;text-align:center;padding:8px 12px;border-radius:6px;margin-bottom:10px;"></div>
+      <button class="bp" id="submit-btn" onclick="submitResults()" style="width:100%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>📤</span> Submit Results to Dashboard
+      </button>
+    </div>
+    <div class="ract">
+      <button class="bp" onclick="restartGame()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text2);">Play Again</button>
+      <button class="bs" onclick="showSplash()">Change Mode</button>
+    </div>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="brand"><div class="bicon">CQ</div><div class="bname">CargoQuotes</div><div class="bsep">|</div><div class="bmod">US Geography Training</div></div>
+  <div class="hdr-r">
+    <div class="pill ps">Score <span class="pv" id="scoredisp">0</span></div>
+    <div class="pill pk">🔥 <span class="pv" id="streakdisp">0</span></div>
+    <button id="save-exit-btn" onclick="saveAndExit()" style="display:none;padding:5px 14px;background:transparent;border:1px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:.6rem;font-weight:600;color:var(--text3);cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all .15s;"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">
+      Save &amp; Exit
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="pbar"><div class="pfill" id="prog" style="width:0%"></div></div>
+  <div class="ttrack" id="ttrack" style="display:none"><div class="tfill" id="tbar" style="width:100%"></div></div>
+  <div class="qcard">
+    <div class="qnum" id="qnum">Q 1 / 20</div><div class="qsep">—</div>
+    <div class="qtxt" id="qtxt">Loading real US map data...</div>
+    <div class="qbadge" id="qbadge">STATE</div>
+  </div>
+  <div class="instr"><span>📌</span><span id="instrtxt">Hover a state to see its name. Click the correct state to answer.</span></div>
+  <div class="mapwrap">
+    <div class="map-loading" id="map-loading"><div class="spinner"></div><span>Fetching US map data from CDN...</span></div>
+    <svg id="map-svg" viewBox="0 0 960 600"></svg>
+    <div class="map-hint" id="maphint">Hover for names · Click to answer</div>
+  </div>
+  <div class="fb" id="fb">
+    <div class="fbicon" id="fbicon">✓</div>
+    <div class="fbmain"><div id="fbmaintxt"></div><div class="fbfact" id="fbfact"></div></div>
+    <button class="nextbtn" onclick="nextQ()">Next →</button>
+  </div>
+</div>
+
+<script>
+const FIPS={
+  "01":{name:"Alabama",abbr:"AL"},"04":{name:"Arizona",abbr:"AZ"},"05":{name:"Arkansas",abbr:"AR"},
+  "06":{name:"California",abbr:"CA"},"08":{name:"Colorado",abbr:"CO"},"09":{name:"Connecticut",abbr:"CT"},
+  "10":{name:"Delaware",abbr:"DE"},"12":{name:"Florida",abbr:"FL"},"13":{name:"Georgia",abbr:"GA"},
+  "16":{name:"Idaho",abbr:"ID"},"17":{name:"Illinois",abbr:"IL"},"18":{name:"Indiana",abbr:"IN"},
+  "19":{name:"Iowa",abbr:"IA"},"20":{name:"Kansas",abbr:"KS"},"21":{name:"Kentucky",abbr:"KY"},
+  "22":{name:"Louisiana",abbr:"LA"},"23":{name:"Maine",abbr:"ME"},"24":{name:"Maryland",abbr:"MD"},
+  "25":{name:"Massachusetts",abbr:"MA"},"26":{name:"Michigan",abbr:"MI"},"27":{name:"Minnesota",abbr:"MN"},
+  "28":{name:"Mississippi",abbr:"MS"},"29":{name:"Missouri",abbr:"MO"},"30":{name:"Montana",abbr:"MT"},
+  "31":{name:"Nebraska",abbr:"NE"},"32":{name:"Nevada",abbr:"NV"},"33":{name:"New Hampshire",abbr:"NH"},
+  "34":{name:"New Jersey",abbr:"NJ"},"35":{name:"New Mexico",abbr:"NM"},"36":{name:"New York",abbr:"NY"},
+  "37":{name:"North Carolina",abbr:"NC"},"38":{name:"North Dakota",abbr:"ND"},"39":{name:"Ohio",abbr:"OH"},
+  "40":{name:"Oklahoma",abbr:"OK"},"41":{name:"Oregon",abbr:"OR"},"42":{name:"Pennsylvania",abbr:"PA"},
+  "44":{name:"Rhode Island",abbr:"RI"},"45":{name:"South Carolina",abbr:"SC"},"46":{name:"South Dakota",abbr:"SD"},
+  "47":{name:"Tennessee",abbr:"TN"},"48":{name:"Texas",abbr:"TX"},"49":{name:"Utah",abbr:"UT"},
+  "50":{name:"Vermont",abbr:"VT"},"51":{name:"Virginia",abbr:"VA"},"53":{name:"Washington",abbr:"WA"},
+  "54":{name:"West Virginia",abbr:"WV"},"55":{name:"Wisconsin",abbr:"WI"},"56":{name:"Wyoming",abbr:"WY"}
+};
+
+const CITIES=[
+  {id:"NYC",name:"New York City",state:"NY",lon:-74.01,lat:40.71,fact:"Port of NY/NJ — busiest East Coast container port."},
+  {id:"LA",name:"Los Angeles",state:"CA",lon:-118.24,lat:34.05,fact:"Ports of LA/Long Beach handle ~40% of all US container imports."},
+  {id:"CHI",name:"Chicago",state:"IL",lon:-87.63,lat:41.88,fact:"All 7 Class I railroads converge here — #1 US rail hub."},
+  {id:"HOU",name:"Houston",state:"TX",lon:-95.37,lat:29.76,fact:"Major energy freight corridor and Gulf Coast petrochemical hub."},
+  {id:"PHX",name:"Phoenix",state:"AZ",lon:-112.07,lat:33.45,fact:"Fast-growing Southwest distribution hub on I-10."},
+  {id:"PHI",name:"Philadelphia",state:"PA",lon:-75.16,lat:39.95,fact:"Major NE corridor city — strong LTL and intermodal connections."},
+  {id:"SAN",name:"San Antonio",state:"TX",lon:-98.49,lat:29.42,fact:"Near Laredo — the busiest US-Mexico land port of entry."},
+  {id:"DAL",name:"Dallas",state:"TX",lon:-96.80,lat:32.78,fact:"Central US crossroads — I-20, I-30, I-35 all converge here."},
+  {id:"JAX",name:"Jacksonville",state:"FL",lon:-81.66,lat:30.33,fact:"JAXPORT is a key Southeast distribution and vehicle import port."},
+  {id:"ATL",name:"Atlanta",state:"GA",lon:-84.39,lat:33.75,fact:"Hartsfield-Jackson airport — I-75/85 major freight corridor."},
+  {id:"MEM",name:"Memphis",state:"TN",lon:-90.05,lat:35.15,fact:"FedEx World Hub — #1 US cargo airport by annual volume."},
+  {id:"LOU",name:"Louisville",state:"KY",lon:-85.76,lat:38.25,fact:"UPS Worldport — world's largest automated package facility."},
+  {id:"KCM",name:"Kansas City",state:"MO",lon:-94.58,lat:39.10,fact:"Largest US rail hub by volume — the nation's freight crossroads."},
+  {id:"COL",name:"Columbus",state:"OH",lon:-82.99,lat:39.96,fact:"Within 500 miles of 60% of the US population."},
+  {id:"IND",name:"Indianapolis",state:"IN",lon:-86.16,lat:39.77,fact:"Crossroads of America — I-65, I-70, I-74, I-69 all intersect."},
+  {id:"DEN",name:"Denver",state:"CO",lon:-104.99,lat:39.74,fact:"Mountain hub — gateway between Midwest and West Coast lanes."},
+  {id:"SEA",name:"Seattle",state:"WA",lon:-122.33,lat:47.61,fact:"Port of Seattle/Tacoma — major Pacific Rim freight gateway."},
+  {id:"DET",name:"Detroit",state:"MI",lon:-83.05,lat:42.33,fact:"Auto industry capital — largest automotive parts freight market."},
+  {id:"MIN",name:"Minneapolis",state:"MN",lon:-93.27,lat:44.98,fact:"Upper Midwest hub — agricultural and manufactured goods."},
+  {id:"NAS",name:"Nashville",state:"TN",lon:-86.78,lat:36.17,fact:"Growing logistics hub in the central South corridor."},
+  {id:"BAL",name:"Baltimore",state:"MD",lon:-76.61,lat:39.29,fact:"Port of Baltimore handles more autos than any other US port."},
+  {id:"MIL",name:"Milwaukee",state:"WI",lon:-87.91,lat:43.05,fact:"Great Lakes port — strong industrial and dairy freight base."},
+  {id:"SLC",name:"Salt Lake City",state:"UT",lon:-111.89,lat:40.76,fact:"Inland port and primary Mountain West distribution center."},
+  {id:"CHA",name:"Charlotte",state:"NC",lon:-80.84,lat:35.23,fact:"Fastest-growing freight market in the Southeast."},
+  {id:"NOR",name:"Norfolk",state:"VA",lon:-76.29,lat:36.89,fact:"Port of Virginia — largest container terminal on the East Coast."},
+  {id:"NEW",name:"New Orleans",state:"LA",lon:-90.07,lat:29.95,fact:"2nd largest US port by tonnage — major bulk commodity gateway."},
+  {id:"ELP",name:"El Paso",state:"TX",lon:-106.49,lat:31.76,fact:"Major US-Mexico border crossing for cross-border freight."},
+  {id:"POR",name:"Portland",state:"OR",lon:-122.68,lat:45.52,fact:"Pacific NW port — timber, agricultural, and tech freight."},
+  {id:"SFO",name:"San Francisco",state:"CA",lon:-122.42,lat:37.77,fact:"Bay Area port — major tech and intermodal freight hub."},
+  {id:"OMA",name:"Omaha",state:"NE",lon:-95.93,lat:41.26,fact:"Major agribusiness and distribution hub — all rail lines cross NE."},
+];
+
+const SFACTS={
+  AL:"Port of Mobile: Gulf Coast entry and automotive freight hub.",
+  AZ:"Phoenix is one of the fastest-growing Southwest distribution markets.",
+  AR:"Little Rock: central position on major E-W and N-S corridors.",
+  CA:"Ports of LA/Long Beach handle ~40% of US imports from Asia.",
+  CO:"Denver: Mountain West gateway between Midwest and West Coast.",
+  CT:"Hartford: strong manufacturing and distribution base in New England.",
+  DE:"Wilmington: key Northeast corridor waypoint for LTL freight.",
+  FL:"JAXPORT, Port Tampa Bay, Port Everglades serve SE and Latin America.",
+  GA:"Atlanta's I-75/85 corridor — Hartsfield is the world's busiest airport.",
+  ID:"Boise: growing Pacific NW distribution hub; agricultural exports.",
+  IL:"Chicago: all 7 Class I railroads converge — #1 US freight rail hub.",
+  IN:"Indianapolis: Crossroads of America — I-65, I-70, I-74, I-69 intersect.",
+  IA:"Des Moines: key agribusiness corridor in the central Midwest.",
+  KS:"Wichita: aerospace manufacturing freight. I-70 is a key E-W corridor.",
+  KY:"Louisville: UPS Worldport, world's largest automated package facility.",
+  LA:"Port of New Orleans: 2nd largest US port by tonnage — bulk commodities.",
+  ME:"Port of Portland: northernmost East Coast port; Canadian cross-border freight.",
+  MD:"Port of Baltimore: handles more autos than any other US port.",
+  MA:"Boston: major port, tech, pharma, and biotech freight hub.",
+  MI:"Detroit: US auto manufacturing capital and automotive parts freight.",
+  MN:"Minneapolis: Upper Midwest hub for agricultural goods.",
+  MS:"Gulf Coast corridor — Port of Pascagoula serves international trade.",
+  MO:"Kansas City: largest US rail hub by volume — all lanes cross here.",
+  MT:"Billings: Bakken oilfield freight and major agricultural export state.",
+  NE:"Omaha: major agribusiness freight market. All rail lines cross Nebraska.",
+  NV:"Las Vegas and Reno serve as key inland distribution points.",
+  NH:"Portsmouth: Northeast corridor — growing distribution market.",
+  NJ:"Port of NY/NJ (partly NJ): major auto and container import port.",
+  NM:"Albuquerque on I-40 — major transcontinental freight lane.",
+  NY:"Port of NY/NJ: busiest East Coast container port.",
+  NC:"Charlotte: fastest-growing freight market in the Southeast.",
+  ND:"Fargo: energy sector freight and major agricultural export corridor.",
+  OH:"Columbus: within 500 miles of 60% of the US population.",
+  OK:"Oklahoma City on I-40 — major cross-country freight artery.",
+  OR:"Port of Portland: Pacific NW timber, agricultural, and tech freight.",
+  PA:"Philadelphia and Pittsburgh anchor NE and Midwest freight corridors.",
+  RI:"Providence: Northeast urban density freight market.",
+  SC:"Port of Charleston: one of the fastest-growing US container ports.",
+  SD:"Sioux Falls: growing logistics and agricultural distribution center.",
+  TN:"Memphis: FedEx World Hub — #1 US cargo airport by annual volume.",
+  TX:"Largest contiguous state. Laredo is the #1 US-Mexico land port.",
+  UT:"Salt Lake City: inland port and Mountain West distribution center.",
+  VT:"Burlington: dairy and specialty freight; Canadian cross-border trade.",
+  VA:"Port of Virginia (Norfolk): largest container terminal on East Coast.",
+  WA:"Port of Seattle/Tacoma: major Pacific Rim freight gateway.",
+  WV:"Charleston: coal and chemical freight corridor.",
+  WI:"Milwaukee port: major dairy, manufacturing, and Great Lakes freight.",
+  WY:"Cheyenne sits on I-80 — a major transcontinental freight corridor.",
+};
+
+// ─── GAME STATE ───
+// ─── SUPABASE CONFIG ───
+const SB_URL = "https://qmiezaefqoqtxxwuibrx.supabase.co";
+const SB_KEY = "sb_publishable_Wpsb8LoctfiinNPNcQ_c2g_nzzJ--oC";
+
+let gMode="states",questions=[],curQ=0,score=0,streak=0,correct=0,answered=false;
+let tiv=null,tleft=10,mapReady=false;
+let stateLabelsVisible=false;
+const TOTAL=20;
+
+// Session tracking
+let sessionStart=null;
+let traineeName="";
+let questionLog=[]; // array of {q, type, target_name, correct, time_ms}
+let questionStart=null;
+
+// ─── TOOLTIP ───
+function showTip(e,txt){const t=document.getElementById("tip");t.textContent=txt;t.style.display="block";t.style.left=(e.clientX+14)+"px";t.style.top=(e.clientY-30)+"px";}
+function moveTip(e){const t=document.getElementById("tip");t.style.left=(e.clientX+14)+"px";t.style.top=(e.clientY-30)+"px";}
+function hideTip(){document.getElementById("tip").style.display="none";}
+
+// ─── INIT MAP ───
+async function initMap(){
+  try{
+    const us=await d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+    const proj=d3.geoAlbersUsa().scale(1300).translate([480,300]);
+    const path=d3.geoPath().projection(proj);
+    const features=topojson.feature(us,us.objects.states).features;
+
+    const svg=d3.select("#map-svg");
+    svg.style("display","block");
+    document.getElementById("map-loading").style.display="none";
+
+    svg.append("rect").attr("width",960).attr("height",600).attr("fill","#0a1520");
+
+    // States
+    svg.append("g").selectAll("path")
+      .data(features).enter().append("path")
+      .attr("class","state-path")
+      .attr("id",d=>"st-"+d.id)
+      .attr("d",path)
+      .on("click",(e,d)=>onState(String(d.id).padStart(2,"0")))
+      .on("mouseenter",(e,d)=>{
+        // Only show state name tooltip in city mode, or after the question is answered
+        if(stateLabelsVisible){const f=FIPS[String(d.id).padStart(2,"0")];if(f)showTip(e,f.name);}
+      })
+      .on("mousemove",e=>{if(stateLabelsVisible)moveTip(e);})
+      .on("mouseleave",hideTip);
+
+    // Borders
+    svg.append("path")
+      .datum(topojson.mesh(us,us.objects.states,(a,b)=>a!==b))
+      .attr("fill","none").attr("stroke","#3a5570").attr("stroke-width","0.6")
+      .attr("d",path).attr("pointer-events","none");
+
+    // Labels
+    const lg=svg.append("g").attr("id","labels-g").attr("pointer-events","none");
+    features.forEach(d=>{
+      const fips=String(d.id).padStart(2,"0");
+      const s=FIPS[fips]; if(!s) return;
+      const c=path.centroid(d); if(!c||isNaN(c[0])) return;
+      const b=path.bounds(d);
+      const bw=b[1][0]-b[0][0], bh=b[1][1]-b[0][1];
+      lg.append("text").attr("class","state-label")
+        .attr("id","lbl-"+fips)
+        .attr("x",c[0]).attr("y",c[1]+2.5)
+        .attr("font-size",Math.min(8,Math.max(4.5,Math.min(bw,bh)*0.3))+"px")
+        .text(bw<14||bh<10?"":s.abbr);
+    });
+
+    // Cities
+    const cg=svg.append("g").attr("id","cities-g");
+    CITIES.forEach(c=>{
+      const pos=proj([c.lon,c.lat]); if(!pos) return;
+      c._x=pos[0]; c._y=pos[1];
+      const g=cg.append("g").style("cursor","pointer")
+        .on("click",()=>onCity(c.id))
+        .on("mouseenter",e=>showTip(e,c.name+", "+c.state))
+        .on("mousemove",moveTip).on("mouseleave",hideTip);
+      g.append("circle").attr("class","city-dot").attr("id","cc-"+c.id)
+        .attr("cx",c._x).attr("cy",c._y).attr("r",4);
+      g.append("text").attr("class","city-label").attr("id","cl-"+c.id)
+        .attr("x",c._x+6).attr("y",c._y+3).attr("font-size","5.5px").text(c.name);
+    });
+
+    mapReady=true;
+    document.getElementById("qtxt").textContent="Map ready — press Start to begin!";
+  }catch(err){
+    document.getElementById("map-loading").innerHTML=
+      `<div style="color:#f87171;font-family:'IBM Plex Mono',monospace;font-size:.7rem;text-align:center;padding:24px;line-height:1.8">
+        ⚠️ Map failed to load.<br>
+        <span style="font-size:.6rem;opacity:.7">This game requires an internet connection.<br>Please check your connection and refresh the page.</span>
+      </div>`;
+    console.error(err);
+  }
+}
+
+// ─── MODE / QUESTIONS ───
+function selMode(m,el){gMode=m;document.querySelectorAll(".mc").forEach(c=>c.classList.remove("sel"));el.classList.add("sel");}
+
+function buildQs(){
+  const ss=Object.entries(FIPS).map(([fips,s])=>({fips,...s})).sort(()=>Math.random()-.5);
+  const cs=[...CITIES].sort(()=>Math.random()-.5);
+  let qs=[];
+  if(gMode==="states"||gMode==="timed") ss.slice(0,TOTAL).forEach(s=>qs.push({type:"state",target:s}));
+  else if(gMode==="cities") cs.slice(0,TOTAL).forEach(c=>qs.push({type:"city",target:c}));
+  else{for(let i=0;i<TOTAL;i++) i%2===0&&ss[Math.floor(i/2)]?qs.push({type:"state",target:ss[Math.floor(i/2)]}):cs[Math.floor(i/2)]&&qs.push({type:"city",target:cs[Math.floor(i/2)]});}
+  return qs.slice(0,TOTAL).sort(()=>Math.random()-.5);
+}
+
+function startGame(){
+  if(!mapReady){alert("Map is still loading — please wait a moment.");return;}
+  traineeName=(document.getElementById("trainee-name").value||"").trim();
+  if(!traineeName){
+    const inp=document.getElementById("trainee-name");
+    inp.style.borderColor="var(--accent)";inp.placeholder="Enter your name first";inp.focus();return;
+  }
+  document.getElementById("splash").style.display="none";
+  questions=buildQs();curQ=0;score=0;streak=0;correct=0;questionLog=[];
+  sessionStart=Date.now();
+  document.getElementById("save-exit-btn").style.display="block";
+  updScore();loadQ();
+}
+function restartGame(){
+  document.getElementById("results").style.display="none";
+  questions=buildQs();curQ=0;score=0;streak=0;correct=0;questionLog=[];
+  sessionStart=Date.now();
+  // Reset submit button
+  const btn=document.getElementById("submit-btn");
+  btn.disabled=false;btn.innerHTML="<span>📤</span> Submit Results to Dashboard";
+  document.getElementById("submit-status").style.display="none";
+  updScore();loadQ();
+}
+function showSplash(){document.getElementById("results").style.display="none";document.getElementById("splash").style.display="flex";}
+
+function loadQ(){
+  if(curQ>=questions.length){showResults();return;}
+  answered=false;clearFb();resetHL();questionStart=Date.now();
+  const q=questions[curQ];
+  document.getElementById("qnum").textContent="Q "+(curQ+1)+" / "+TOTAL;
+  document.getElementById("prog").style.width=((curQ/TOTAL)*100)+"%";
+  if(q.type==="state"){
+    document.getElementById("qtxt").textContent="Click the state of "+q.target.name;
+    document.getElementById("qbadge").textContent="STATE";
+    document.getElementById("instrtxt").textContent="The map is blank — find and click the correct state.";
+    document.getElementById("maphint").textContent="No hints — find the state and click it!";
+    d3.select("#cities-g").style("display","none");
+    d3.select("#labels-g").style("display","none"); // hide abbreviations
+    stateLabelsVisible=false; // disable hover tooltips for states
+  }else{
+    document.getElementById("qtxt").textContent="Find "+q.target.name+", "+q.target.state+" on the map";
+    document.getElementById("qbadge").textContent="CITY";
+    document.getElementById("instrtxt").textContent="Hover a city dot to see its name. Click the correct city to answer.";
+    document.getElementById("maphint").textContent="Hover dots for city names · Click to answer";
+    d3.select("#cities-g").style("display",null);
+    d3.select("#labels-g").style("display",null); // show state abbreviations in city mode
+    stateLabelsVisible=true; // enable hover tooltips so state context is available
+  }
+  if(gMode==="timed"){document.getElementById("ttrack").style.display="block";startTimer();}
+  else document.getElementById("ttrack").style.display="none";
+}
+
+function startTimer(){
+  clearInterval(tiv);tleft=10;
+  const bar=document.getElementById("tbar");bar.style.width="100%";bar.className="tfill";
+  tiv=setInterval(()=>{
+    tleft-=0.1;bar.style.width=Math.max(0,(tleft/10)*100)+"%";
+    if(tleft<=5)bar.className="tfill warn";
+    if(tleft<=2.5)bar.className="tfill danger";
+    if(tleft<=0){clearInterval(tiv);if(!answered)doTimeout();}
+  },100);
+}
+
+function doTimeout(){
+  answered=true;streak=0;updScore();
+  const q=questions[curQ];
+  questionLog.push({question_num:curQ+1,type:q.type,target:q.target.name||q.target.id,correct:false,time_ms:10000,timed_out:true});
+  if(q.type==="state"){
+    d3.select("#st-"+parseInt(q.target.fips)).classed("show-correct",true);
+    d3.select("#labels-g").style("display",null);
+    stateLabelsVisible=true;
+  }
+  else{d3.select("#cc-"+q.target.id).attr("r",7).classed("correct",true);d3.select("#cl-"+q.target.id).classed("revealed",true);}
+  showFb(false,"Time's up! — "+q.target.name,q.type==="city"?q.target.fact:SFACTS[q.target.abbr]||"");
+}
+
+function onState(fips){
+  if(answered)return;const q=questions[curQ];if(q.type!=="state")return;
+  clearInterval(tiv);answered=true;
+  const ok=fips===q.target.fips;
+  d3.select("#st-"+parseInt(fips)).classed(ok?"correct":"wrong",true);
+  if(!ok)d3.select("#st-"+parseInt(q.target.fips)).classed("show-correct",true);
+  // After answering, reveal labels and tooltips so user can review the map
+  d3.select("#labels-g").style("display",null);
+  stateLabelsVisible=true;
+  doAnswer(ok,q.target.name,SFACTS[q.target.abbr]||q.target.name+" is a key US freight state.");
+}
+
+function onCity(cid){
+  if(answered)return;const q=questions[curQ];if(q.type!=="city")return;
+  clearInterval(tiv);answered=true;
+  const ok=cid===q.target.id;
+  d3.select("#cc-"+cid).attr("r",7).classed(ok?"correct":"wrong",true);
+  if(!ok){d3.select("#cc-"+q.target.id).attr("r",8).classed("correct",true);d3.select("#cl-"+q.target.id).classed("revealed",true);}
+  doAnswer(ok,q.target.name,q.target.fact);
+}
+
+function doAnswer(ok,name,fact){
+  if(ok){correct++;streak++;const pts=gMode==="timed"?Math.max(10,Math.round(tleft*15)):10;score+=pts+(streak>2?(streak-1)*3:0);}
+  else streak=0;
+  // Log this question result
+  const q=questions[curQ];
+  questionLog.push({
+    question_num:curQ+1,
+    type:q.type,
+    target:name,
+    correct:ok,
+    time_ms:questionStart?Date.now()-questionStart:null
+  });
+  updScore();showFb(ok,ok?"Correct! — "+name:"Incorrect — That was "+name,fact);
+}
+
+function showFb(ok,main,fact){
+  const el=document.getElementById("fb");el.className="fb "+(ok?"correct":"wrong");
+  document.getElementById("fbicon").textContent=ok?"✓":"✗";
+  document.getElementById("fbmaintxt").textContent=main;
+  document.getElementById("fbfact").textContent="💡 "+(fact||"");
+}
+function clearFb(){const el=document.getElementById("fb");el.className="fb";el.style.display="none";setTimeout(()=>el.style.display="",0);}
+function resetHL(){
+  d3.selectAll(".state-path").classed("correct",false).classed("wrong",false).classed("show-correct",false);
+  d3.selectAll(".city-dot").attr("r",4).classed("correct",false).classed("wrong",false);
+  d3.selectAll(".city-label").classed("revealed",false);
+}
+function updScore(){document.getElementById("scoredisp").textContent=score;document.getElementById("streakdisp").textContent=streak;}
+function nextQ(){curQ++;loadQ();}
+
+function showResults(){
+  const pct=Math.round((correct/TOTAL)*100);
+  let grade,color,msg;
+  if(pct>=95){grade="A+";color="#34d399";msg="Outstanding! You know US geography cold. Your reps will trust your lane knowledge.";}
+  else if(pct>=90){grade="A";color="#34d399";msg="Excellent. Strong command of US states and major freight cities.";}
+  else if(pct>=80){grade="B";color="#60a5fa";msg="Good result. A few more sessions and you'll be at expert level.";}
+  else if(pct>=70){grade="C";color="#fbbf24";msg="Decent start. Focus on what you missed and retake the session.";}
+  else{grade="D";color="#f87171";msg="Keep practicing. Geography is critical for quoting freight lanes accurately.";}
+  document.getElementById("rgrade").textContent=grade;document.getElementById("rgrade").style.color=color;
+  document.getElementById("rlbl").textContent=pct+"% Accuracy — Session Complete";
+  document.getElementById("rcorrect").textContent=correct;document.getElementById("rtotal").textContent=TOTAL;document.getElementById("rpct").textContent=pct+"%";
+  document.getElementById("rmsg").textContent=msg;
+  document.getElementById("save-exit-btn").style.display="none";
+  document.getElementById("results").style.display="flex";
+  // Show trainee name in results label
+  if(traineeName) document.getElementById("rlbl").textContent=traineeName+" — "+pct+"% Accuracy";
+}
+
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&answered)nextQ();});
+
+// ─── SUPABASE SUBMISSION ───
+function buildPayload(partial){
+  const elapsed=sessionStart?Math.round((Date.now()-sessionStart)/1000):0;
+  const mins=Math.floor(elapsed/60), secs=elapsed%60;
+  const pct=Math.round((correct/(questionLog.length||TOTAL))*100);
+  const grade=pct>=90?"A":pct>=80?"B":pct>=70?"C":"D";
+  return {
+    trainee_name: traineeName||"Unknown",
+    completed_at: new Date().toISOString(),
+    elapsed_seconds: elapsed,
+    elapsed_display: mins>0?(secs>0?mins+"m "+secs+"s":mins+"m"):secs+"s",
+    score: correct,
+    total: questionLog.length||TOTAL,
+    pct: pct,
+    grade: grade,
+    modules_selected: [gMode==="timed"?"speed":gMode],
+    mod_scores: {geography: {correct:correct, total:questionLog.length||TOTAL, pct:pct}},
+    question_details: questionLog.map(q=>({
+      num: q.question_num,
+      type: q.type,
+      target: q.target,
+      correct: q.correct,
+      time_ms: q.time_ms,
+      timed_out: q.timed_out||false
+    })),
+    partial: partial||false
+  };
+}
+
+async function submitResults(){
+  const btn=document.getElementById("submit-btn");
+  const statusEl=document.getElementById("submit-status");
+  btn.disabled=true;
+  btn.innerHTML='<span style="display:inline-block;animation:spin .7s linear infinite">⏳</span> Submitting...';
+  statusEl.style.display="none";
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/training_sessions",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SB_KEY,
+        "Authorization":"Bearer "+SB_KEY,
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(buildPayload(false))
+    });
+    if(!res.ok){const err=await res.text();throw new Error(err);}
+    statusEl.style.cssText="display:block;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;";
+    statusEl.textContent="✓ Results submitted successfully!";
+    btn.innerHTML="✓ Submitted";
+    btn.style.background="rgba(52,211,153,.15)";btn.style.border="1px solid rgba(52,211,153,.3)";btn.style.color="#34d399";
+  }catch(err){
+    console.error("Supabase error:",err);
+    statusEl.style.cssText="display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;";
+    statusEl.textContent="⚠ Submission failed — check connection and try again.";
+    btn.disabled=false;
+    btn.innerHTML="<span>📤</span> Retry Submission";
+  }
+}
+
+async function saveAndExit(){
+  const btn=document.getElementById("save-exit-btn");
+  btn.textContent="Saving...";btn.disabled=true;
+  try{
+    const res=await fetch(SB_URL+"/rest/v1/training_sessions",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "apikey":SB_KEY,
+        "Authorization":"Bearer "+SB_KEY,
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify(buildPayload(true))
+    });
+    if(!res.ok) throw new Error(await res.text());
+    btn.textContent="✓ Saved!";
+    setTimeout(()=>{
+      clearInterval(tiv);
+      showSplash();
+      document.getElementById("save-exit-btn").style.display="none";
+      document.getElementById("save-exit-btn").disabled=false;
+      document.getElementById("save-exit-btn").textContent="Save & Exit";
+    },800);
+  }catch(err){
+    console.error(err);
+    btn.textContent="Save & Exit";btn.disabled=false;
+    alert("Could not save — check your internet connection.");
+  }
+}
+
+initMap();
+</script>
+</body>
+</html>
