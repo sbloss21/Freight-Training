@@ -219,36 +219,177 @@ const FIPS={
 };
 
 const CITIES=[
-  {id:"NYC",name:"New York City",state:"NY",lon:-74.01,lat:40.71,fact:"Port of NY/NJ — busiest East Coast container port."},
-  {id:"LA",name:"Los Angeles",state:"CA",lon:-118.24,lat:34.05,fact:"Ports of LA/Long Beach handle ~40% of all US container imports."},
-  {id:"CHI",name:"Chicago",state:"IL",lon:-87.63,lat:41.88,fact:"All 7 Class I railroads converge here — #1 US rail hub."},
-  {id:"HOU",name:"Houston",state:"TX",lon:-95.37,lat:29.76,fact:"Major energy freight corridor and Gulf Coast petrochemical hub."},
+  // ALABAMA
+  {id:"BHM",name:"Birmingham",state:"AL",lon:-86.80,lat:33.52,fact:"Major steel and industrial freight hub in the Southeast."},
+  {id:"MOB",name:"Mobile",state:"AL",lon:-88.04,lat:30.69,fact:"Port of Mobile — Gulf Coast entry point and automotive freight hub."},
+  {id:"HNT",name:"Huntsville",state:"AL",lon:-86.59,lat:34.73,fact:"Aerospace and defense manufacturing freight corridor."},
+  // ARIZONA
   {id:"PHX",name:"Phoenix",state:"AZ",lon:-112.07,lat:33.45,fact:"Fast-growing Southwest distribution hub on I-10."},
-  {id:"PHI",name:"Philadelphia",state:"PA",lon:-75.16,lat:39.95,fact:"Major NE corridor city — strong LTL and intermodal connections."},
-  {id:"SAN",name:"San Antonio",state:"TX",lon:-98.49,lat:29.42,fact:"Near Laredo — the busiest US-Mexico land port of entry."},
-  {id:"DAL",name:"Dallas",state:"TX",lon:-96.80,lat:32.78,fact:"Central US crossroads — I-20, I-30, I-35 all converge here."},
-  {id:"JAX",name:"Jacksonville",state:"FL",lon:-81.66,lat:30.33,fact:"JAXPORT is a key Southeast distribution and vehicle import port."},
-  {id:"ATL",name:"Atlanta",state:"GA",lon:-84.39,lat:33.75,fact:"Hartsfield-Jackson airport — I-75/85 major freight corridor."},
-  {id:"MEM",name:"Memphis",state:"TN",lon:-90.05,lat:35.15,fact:"FedEx World Hub — #1 US cargo airport by annual volume."},
-  {id:"LOU",name:"Louisville",state:"KY",lon:-85.76,lat:38.25,fact:"UPS Worldport — world's largest automated package facility."},
-  {id:"KCM",name:"Kansas City",state:"MO",lon:-94.58,lat:39.10,fact:"Largest US rail hub by volume — the nation's freight crossroads."},
-  {id:"COL",name:"Columbus",state:"OH",lon:-82.99,lat:39.96,fact:"Within 500 miles of 60% of the US population."},
-  {id:"IND",name:"Indianapolis",state:"IN",lon:-86.16,lat:39.77,fact:"Crossroads of America — I-65, I-70, I-74, I-69 all intersect."},
-  {id:"DEN",name:"Denver",state:"CO",lon:-104.99,lat:39.74,fact:"Mountain hub — gateway between Midwest and West Coast lanes."},
-  {id:"SEA",name:"Seattle",state:"WA",lon:-122.33,lat:47.61,fact:"Port of Seattle/Tacoma — major Pacific Rim freight gateway."},
-  {id:"DET",name:"Detroit",state:"MI",lon:-83.05,lat:42.33,fact:"Auto industry capital — largest automotive parts freight market."},
-  {id:"MIN",name:"Minneapolis",state:"MN",lon:-93.27,lat:44.98,fact:"Upper Midwest hub — agricultural and manufactured goods."},
-  {id:"NAS",name:"Nashville",state:"TN",lon:-86.78,lat:36.17,fact:"Growing logistics hub in the central South corridor."},
-  {id:"BAL",name:"Baltimore",state:"MD",lon:-76.61,lat:39.29,fact:"Port of Baltimore handles more autos than any other US port."},
-  {id:"MIL",name:"Milwaukee",state:"WI",lon:-87.91,lat:43.05,fact:"Great Lakes port — strong industrial and dairy freight base."},
-  {id:"SLC",name:"Salt Lake City",state:"UT",lon:-111.89,lat:40.76,fact:"Inland port and primary Mountain West distribution center."},
-  {id:"CHA",name:"Charlotte",state:"NC",lon:-80.84,lat:35.23,fact:"Fastest-growing freight market in the Southeast."},
-  {id:"NOR",name:"Norfolk",state:"VA",lon:-76.29,lat:36.89,fact:"Port of Virginia — largest container terminal on the East Coast."},
-  {id:"NEW",name:"New Orleans",state:"LA",lon:-90.07,lat:29.95,fact:"2nd largest US port by tonnage — major bulk commodity gateway."},
-  {id:"ELP",name:"El Paso",state:"TX",lon:-106.49,lat:31.76,fact:"Major US-Mexico border crossing for cross-border freight."},
-  {id:"POR",name:"Portland",state:"OR",lon:-122.68,lat:45.52,fact:"Pacific NW port — timber, agricultural, and tech freight."},
+  {id:"TUC",name:"Tucson",state:"AZ",lon:-110.97,lat:32.22,fact:"Key I-10 corridor city near US-Mexico border crossings."},
+  {id:"FLG",name:"Flagstaff",state:"AZ",lon:-111.65,lat:35.20,fact:"I-40 crossroads — major east-west freight through the Southwest."},
+  // ARKANSAS
+  {id:"LIT",name:"Little Rock",state:"AR",lon:-92.29,lat:34.75,fact:"Central position served by major E-W and N-S corridors."},
+  {id:"FTS",name:"Fort Smith",state:"AR",lon:-94.40,lat:35.39,fact:"River port and major trucking hub on the OK-AR border."},
+  // CALIFORNIA
+  {id:"LA",name:"Los Angeles",state:"CA",lon:-118.24,lat:34.05,fact:"Ports of LA/Long Beach handle ~40% of all US container imports."},
   {id:"SFO",name:"San Francisco",state:"CA",lon:-122.42,lat:37.77,fact:"Bay Area port — major tech and intermodal freight hub."},
+  {id:"SAC",name:"Sacramento",state:"CA",lon:-121.49,lat:38.58,fact:"Central Valley distribution hub — major agricultural freight."},
+  {id:"FRE",name:"Fresno",state:"CA",lon:-119.79,lat:36.74,fact:"Heart of the Central Valley — #1 agricultural freight market."},
+  {id:"SDG",name:"San Diego",state:"CA",lon:-117.16,lat:32.72,fact:"Border port city — major US-Mexico cross-border freight."},
+  // COLORADO
+  {id:"DEN",name:"Denver",state:"CO",lon:-104.99,lat:39.74,fact:"Mountain hub — gateway between Midwest and West Coast lanes."},
+  {id:"COL2",name:"Colorado Springs",state:"CO",lon:-104.82,lat:38.83,fact:"Growing distribution market along I-25 corridor."},
+  {id:"GJT",name:"Grand Junction",state:"CO",lon:-108.55,lat:39.06,fact:"Western Colorado hub — energy sector and agricultural freight."},
+  // CONNECTICUT
+  {id:"BDG",name:"Bridgeport",state:"CT",lon:-73.20,lat:41.18,fact:"Northeast corridor port city — dense industrial freight market."},
+  {id:"HFD",name:"Hartford",state:"CT",lon:-72.68,lat:41.76,fact:"Insurance and manufacturing hub — strong LTL market."},
+  // DELAWARE
+  {id:"WIL",name:"Wilmington",state:"DE",lon:-75.55,lat:39.74,fact:"Key Northeast corridor waypoint — major chemical freight hub."},
+  // FLORIDA
+  {id:"JAX",name:"Jacksonville",state:"FL",lon:-81.66,lat:30.33,fact:"JAXPORT is a key Southeast distribution and vehicle import port."},
+  {id:"MIA",name:"Miami",state:"FL",lon:-80.19,lat:25.77,fact:"Gateway to Latin America — major air and sea freight hub."},
+  {id:"TAM",name:"Tampa",state:"FL",lon:-82.46,lat:27.95,fact:"Port Tampa Bay — top US port for bulk phosphate and fertilizer."},
+  {id:"ORL",name:"Orlando",state:"FL",lon:-81.38,lat:28.54,fact:"Growing central Florida distribution hub on I-4."},
+  // GEORGIA
+  {id:"ATL",name:"Atlanta",state:"GA",lon:-84.39,lat:33.75,fact:"Hartsfield-Jackson airport — I-75/85 major freight corridor."},
+  {id:"SAV",name:"Savannah",state:"GA",lon:-81.10,lat:32.08,fact:"Port of Savannah — fastest-growing container port in the US."},
+  {id:"AUG",name:"Augusta",state:"GA",lon:-81.97,lat:33.47,fact:"Major manufacturing and distribution corridor near SC border."},
+  // IDAHO
+  {id:"BOI",name:"Boise",state:"ID",lon:-116.20,lat:43.61,fact:"Growing Pacific NW distribution hub — major agricultural exports."},
+  {id:"POC",name:"Pocatello",state:"ID",lon:-112.45,lat:42.87,fact:"I-15/I-86 junction — key freight crossroads in southern Idaho."},
+  // ILLINOIS
+  {id:"CHI",name:"Chicago",state:"IL",lon:-87.63,lat:41.88,fact:"All 7 Class I railroads converge here — #1 US rail hub."},
+  {id:"ROC",name:"Rockford",state:"IL",lon:-89.09,lat:42.27,fact:"Major manufacturing and distribution hub north of Chicago."},
+  {id:"PEO",name:"Peoria",state:"IL",lon:-89.59,lat:40.69,fact:"Caterpillar HQ — heavy equipment and manufacturing freight."},
+  // INDIANA
+  {id:"IND",name:"Indianapolis",state:"IN",lon:-86.16,lat:39.77,fact:"Crossroads of America — I-65, I-70, I-74, I-69 all intersect."},
+  {id:"FTW",name:"Fort Wayne",state:"IN",lon:-85.14,lat:41.08,fact:"Major logistics hub in northeast Indiana — strong LTL market."},
+  {id:"EVN",name:"Evansville",state:"IN",lon:-87.57,lat:37.97,fact:"Ohio River port city — key Midwest waterway freight hub."},
+  // IOWA
+  {id:"DSM",name:"Des Moines",state:"IA",lon:-93.62,lat:41.59,fact:"Key agribusiness corridor — major insurance and finance hub."},
+  {id:"CDR",name:"Cedar Rapids",state:"IA",lon:-91.64,lat:41.98,fact:"Major grain processing and agricultural export market."},
+  {id:"DVP",name:"Davenport",state:"IA",lon:-90.58,lat:41.52,fact:"Quad Cities — Mississippi River crossing and rail junction."},
+  // KANSAS
+  {id:"WIC",name:"Wichita",state:"KS",lon:-97.34,lat:37.69,fact:"Aerospace capital — major aircraft parts manufacturing freight."},
+  {id:"TOP",name:"Topeka",state:"KS",lon:-95.69,lat:39.05,fact:"State capital on I-70 — key east-west freight corridor."},
+  // KENTUCKY
+  {id:"LOU",name:"Louisville",state:"KY",lon:-85.76,lat:38.25,fact:"UPS Worldport — world's largest automated package facility."},
+  {id:"LEX",name:"Lexington",state:"KY",lon:-84.50,lat:38.04,fact:"Major auto manufacturing corridor — Toyota plant nearby."},
+  {id:"BOW",name:"Bowling Green",state:"KY",lon:-86.44,lat:36.99,fact:"Corvette plant and growing automotive supply chain hub."},
+  // LOUISIANA
+  {id:"NEW",name:"New Orleans",state:"LA",lon:-90.07,lat:29.95,fact:"2nd largest US port by tonnage — major bulk commodity gateway."},
+  {id:"BAT",name:"Baton Rouge",state:"LA",lon:-91.15,lat:30.45,fact:"Major petrochemical complex — 2nd busiest US inland port."},
+  {id:"SHV",name:"Shreveport",state:"LA",lon:-93.75,lat:32.52,fact:"Oil and gas freight hub at the TX-LA-AR crossroads."},
+  // MAINE
+  {id:"PRT",name:"Portland",state:"ME",lon:-70.26,lat:43.66,fact:"Northernmost East Coast port — Canadian cross-border freight."},
+  // MARYLAND
+  {id:"BAL",name:"Baltimore",state:"MD",lon:-76.61,lat:39.29,fact:"Port of Baltimore handles more autos than any other US port."},
+  {id:"FRD",name:"Frederick",state:"MD",lon:-77.41,lat:39.41,fact:"Major I-70/I-270 interchange — growing DC-area distribution hub."},
+  // MASSACHUSETTS
+  {id:"BOS",name:"Boston",state:"MA",lon:-71.06,lat:42.36,fact:"Major port, biotech, pharma, and tech freight hub."},
+  {id:"SPR",name:"Springfield",state:"MA",lon:-72.59,lat:42.10,fact:"Western MA distribution hub on I-90 (Mass Pike)."},
+  // MICHIGAN
+  {id:"DET",name:"Detroit",state:"MI",lon:-83.05,lat:42.33,fact:"Auto industry capital — largest automotive parts freight market."},
+  {id:"GRR",name:"Grand Rapids",state:"MI",lon:-85.67,lat:42.96,fact:"Furniture capital of the world — major West Michigan freight hub."},
+  {id:"LAN",name:"Lansing",state:"MI",lon:-84.55,lat:42.73,fact:"State capital and GM manufacturing — automotive supply chain."},
+  // MINNESOTA
+  {id:"MIN",name:"Minneapolis",state:"MN",lon:-93.27,lat:44.98,fact:"Upper Midwest hub — agricultural and manufactured goods."},
+  {id:"DUL",name:"Duluth",state:"MN",lon:-92.10,lat:46.79,fact:"Largest inland port in the US — major iron ore and grain shipments."},
+  {id:"ROC2",name:"Rochester",state:"MN",lon:-92.46,lat:44.02,fact:"Medical device manufacturing — growing distribution market."},
+  // MISSISSIPPI
+  {id:"JAN",name:"Jackson",state:"MS",lon:-90.18,lat:32.30,fact:"State capital at I-20/I-55 junction — central MS distribution."},
+  {id:"GUL",name:"Gulfport",state:"MS",lon:-89.09,lat:30.37,fact:"Port of Gulfport — key Gulf Coast container and refrigerated port."},
+  // MISSOURI
+  {id:"KCM",name:"Kansas City",state:"MO",lon:-94.58,lat:39.10,fact:"Largest US rail hub by volume — the nation's freight crossroads."},
+  {id:"STL",name:"St. Louis",state:"MO",lon:-90.20,lat:38.63,fact:"Gateway Arch city — major Mississippi River and rail junction."},
+  {id:"SPS",name:"Springfield",state:"MO",lon:-93.29,lat:37.21,fact:"Home of Bass Pro and major Ozarks distribution hub."},
+  // MONTANA
+  {id:"BIL",name:"Billings",state:"MT",lon:-108.54,lat:45.78,fact:"Largest MT city — Bakken oilfield freight and ag exports."},
+  {id:"GFA",name:"Great Falls",state:"MT",lon:-111.30,lat:47.50,fact:"North-central MT hub — agricultural and energy freight."},
+  // NEBRASKA
   {id:"OMA",name:"Omaha",state:"NE",lon:-95.93,lat:41.26,fact:"Major agribusiness and distribution hub — all rail lines cross NE."},
+  {id:"LNK",name:"Lincoln",state:"NE",lon:-96.70,lat:40.81,fact:"State capital — major I-80 corridor city and ag processing hub."},
+  // NEVADA
+  {id:"LV",name:"Las Vegas",state:"NV",lon:-115.14,lat:36.17,fact:"Major retail distribution hub — massive warehousing growth."},
+  {id:"RNO",name:"Reno",state:"NV",lon:-119.81,lat:39.53,fact:"Inland port — Tesla Gigafactory and major West Coast distribution."},
+  // NEW HAMPSHIRE
+  {id:"MAN",name:"Manchester",state:"NH",lon:-71.46,lat:42.99,fact:"Largest NH city — Northeast corridor distribution market."},
+  // NEW JERSEY
+  {id:"NEW2",name:"Newark",state:"NJ",lon:-74.17,lat:40.74,fact:"Port Newark — major container terminal serving the NY metro."},
+  {id:"TRE",name:"Trenton",state:"NJ",lon:-74.76,lat:40.22,fact:"State capital on I-95 — key NE corridor freight waypoint."},
+  // NEW MEXICO
+  {id:"ABQ",name:"Albuquerque",state:"NM",lon:-106.65,lat:35.08,fact:"I-40 and I-25 junction — major Southwest freight crossroads."},
+  {id:"LAS",name:"Las Cruces",state:"NM",lon:-106.78,lat:32.32,fact:"Near El Paso — critical US-Mexico border freight corridor."},
+  // NEW YORK
+  {id:"NYC",name:"New York City",state:"NY",lon:-74.01,lat:40.71,fact:"Port of NY/NJ — busiest East Coast container port."},
+  {id:"BUF",name:"Buffalo",state:"NY",lon:-78.88,lat:42.89,fact:"Major US-Canada border crossing — Peace Bridge freight hub."},
+  {id:"ALB",name:"Albany",state:"NY",lon:-73.76,lat:42.65,fact:"State capital — I-87/I-90 junction and Hudson River port."},
+  // NORTH CAROLINA
+  {id:"CHA",name:"Charlotte",state:"NC",lon:-80.84,lat:35.23,fact:"Fastest-growing freight market in the Southeast."},
+  {id:"RAL",name:"Raleigh",state:"NC",lon:-78.64,lat:35.78,fact:"Research Triangle — growing biotech and tech freight corridor."},
+  {id:"GRE",name:"Greensboro",state:"NC",lon:-79.79,lat:36.07,fact:"I-85/I-40 junction — major Southeast freight crossroads."},
+  // NORTH DAKOTA
+  {id:"FAR",name:"Fargo",state:"ND",lon:-96.79,lat:46.88,fact:"Largest ND city — energy sector and major ag export corridor."},
+  {id:"BIS",name:"Bismarck",state:"ND",lon:-100.78,lat:46.81,fact:"State capital — Bakken oilfield freight and grain exports."},
+  // OHIO
+  {id:"COL",name:"Columbus",state:"OH",lon:-82.99,lat:39.96,fact:"Within 500 miles of 60% of the US population."},
+  {id:"CLE",name:"Cleveland",state:"OH",lon:-81.69,lat:41.50,fact:"Major Great Lakes port — steel and manufacturing freight hub."},
+  {id:"CIN",name:"Cincinnati",state:"OH",lon:-84.51,lat:39.10,fact:"DHL Americas hub and major I-71/I-75 freight junction."},
+  // OKLAHOMA
+  {id:"OKC",name:"Oklahoma City",state:"OK",lon:-97.52,lat:35.47,fact:"I-40 corridor — major cross-country freight artery."},
+  {id:"TUL",name:"Tulsa",state:"OK",lon:-95.99,lat:36.15,fact:"Arkansas River port — major oil and gas freight hub."},
+  // OREGON
+  {id:"POR",name:"Portland",state:"OR",lon:-122.68,lat:45.52,fact:"Pacific NW port — timber, agricultural, and tech freight."},
+  {id:"EUG",name:"Eugene",state:"OR",lon:-123.09,lat:44.05,fact:"Southern OR hub — timber and agricultural freight corridor."},
+  {id:"MED",name:"Medford",state:"OR",lon:-122.87,lat:42.33,fact:"Southern OR distribution hub near CA border on I-5."},
+  // PENNSYLVANIA
+  {id:"PHI",name:"Philadelphia",state:"PA",lon:-75.16,lat:39.95,fact:"Major NE corridor city — strong LTL and intermodal connections."},
+  {id:"PIT",name:"Pittsburgh",state:"PA",lon:-79.99,lat:40.44,fact:"Three rivers junction — major steel and industrial freight hub."},
+  {id:"ALL",name:"Allentown",state:"PA",lon:-75.49,lat:40.60,fact:"Lehigh Valley — one of the fastest-growing logistics markets in the US."},
+  // RHODE ISLAND
+  {id:"PRV",name:"Providence",state:"RI",lon:-71.41,lat:41.82,fact:"Northeast urban density freight market — Port of Providence."},
+  // SOUTH CAROLINA
+  {id:"CHS",name:"Charleston",state:"SC",lon:-79.93,lat:32.78,fact:"Port of Charleston — one of the fastest-growing US container ports."},
+  {id:"COL3",name:"Columbia",state:"SC",lon:-81.03,lat:34.00,fact:"State capital — central SC distribution hub on I-20/I-26."},
+  {id:"SPT",name:"Spartanburg",state:"SC",lon:-81.93,lat:34.95,fact:"BMW US plant — major automotive supply chain hub."},
+  // SOUTH DAKOTA
+  {id:"SXF",name:"Sioux Falls",state:"SD",lon:-96.73,lat:43.54,fact:"Largest SD city — growing logistics and ag distribution center."},
+  {id:"RAP",name:"Rapid City",state:"SD",lon:-103.23,lat:44.08,fact:"Western SD hub — I-90 corridor and Black Hills freight market."},
+  // TENNESSEE
+  {id:"MEM",name:"Memphis",state:"TN",lon:-90.05,lat:35.15,fact:"FedEx World Hub — #1 US cargo airport by annual volume."},
+  {id:"NAS",name:"Nashville",state:"TN",lon:-86.78,lat:36.17,fact:"Growing logistics hub — major auto manufacturing corridor."},
+  {id:"KNX",name:"Knoxville",state:"TN",lon:-83.92,lat:35.96,fact:"I-40/I-75 junction — gateway to Southeast Appalachian market."},
+  // TEXAS
+  {id:"HOU",name:"Houston",state:"TX",lon:-95.37,lat:29.76,fact:"Major energy freight corridor and Gulf Coast petrochemical hub."},
+  {id:"DAL",name:"Dallas",state:"TX",lon:-96.80,lat:32.78,fact:"Central US crossroads — I-20, I-30, I-35 all converge here."},
+  {id:"SAN",name:"San Antonio",state:"TX",lon:-98.49,lat:29.42,fact:"Near Laredo — the busiest US-Mexico land port of entry."},
+  {id:"ELP",name:"El Paso",state:"TX",lon:-106.49,lat:31.76,fact:"Major US-Mexico border crossing for cross-border freight."},
+  {id:"AUS",name:"Austin",state:"TX",lon:-97.74,lat:30.27,fact:"Fast-growing tech hub — major semiconductor and electronics freight."},
+  {id:"LAR",name:"Laredo",state:"TX",lon:-99.50,lat:27.51,fact:"#1 US-Mexico land port of entry by trade volume."},
+  {id:"AMR",name:"Amarillo",state:"TX",lon:-101.83,lat:35.22,fact:"I-40 panhandle hub — beef and agricultural freight center."},
+  // UTAH
+  {id:"SLC",name:"Salt Lake City",state:"UT",lon:-111.89,lat:40.76,fact:"Inland port and primary Mountain West distribution center."},
+  {id:"PRO",name:"Provo",state:"UT",lon:-111.66,lat:40.23,fact:"Growing tech corridor — Silicon Slopes distribution market."},
+  // VERMONT
+  {id:"BTV",name:"Burlington",state:"VT",lon:-73.21,lat:44.48,fact:"Largest VT city — dairy, specialty freight, and Canadian trade."},
+  // VIRGINIA
+  {id:"NOR",name:"Norfolk",state:"VA",lon:-76.29,lat:36.89,fact:"Port of Virginia — largest container terminal on the East Coast."},
+  {id:"RIC",name:"Richmond",state:"VA",lon:-77.46,lat:37.54,fact:"Major I-95 corridor hub — growing East Coast distribution center."},
+  {id:"ROA",name:"Roanoke",state:"VA",lon:-79.94,lat:37.27,fact:"Southwest VA hub — I-81 corridor heavy truck freight."},
+  // WASHINGTON
+  {id:"SEA",name:"Seattle",state:"WA",lon:-122.33,lat:47.61,fact:"Port of Seattle/Tacoma — major Pacific Rim freight gateway."},
+  {id:"SPO",name:"Spokane",state:"WA",lon:-117.43,lat:47.66,fact:"Eastern WA hub — agricultural and mining freight crossroads."},
+  {id:"TAC",name:"Tacoma",state:"WA",lon:-122.44,lat:47.25,fact:"Port of Tacoma — major container port serving Pacific Rim trade."},
+  // WEST VIRGINIA
+  {id:"CRW",name:"Charleston",state:"WV",lon:-81.63,lat:38.35,fact:"State capital — coal and chemical freight corridor on I-64/I-77."},
+  {id:"HUN",name:"Huntington",state:"WV",lon:-82.44,lat:38.42,fact:"Ohio River port — major coal barge and rail freight junction."},
+  // WISCONSIN
+  {id:"MIL",name:"Milwaukee",state:"WI",lon:-87.91,lat:43.05,fact:"Great Lakes port — strong industrial and dairy freight base."},
+  {id:"MAD",name:"Madison",state:"WI",lon:-89.40,lat:43.07,fact:"State capital — growing distribution hub between Chicago and MN."},
+  {id:"GRB",name:"Green Bay",state:"WI",lon:-88.02,lat:44.52,fact:"Major paper and food manufacturing freight hub."},
+  // WYOMING
+  {id:"CHE",name:"Cheyenne",state:"WY",lon:-104.82,lat:41.14,fact:"I-80/I-25 junction — major transcontinental freight crossroads."},
+  {id:"CAS",name:"Casper",state:"WY",lon:-106.32,lat:42.87,fact:"Central WY hub — oil and gas freight and ranching exports."},
 ];
 
 const SFACTS={
@@ -311,7 +452,7 @@ let gMode="states",questions=[],curQ=0,score=0,streak=0,correct=0,answered=false
 let tiv=null,tleft=10,mapReady=false;
 let stateLabelsVisible=false;
 let cityTooltipsVisible=false;
-const TOTAL=20;
+const TOTAL=25;
 
 // Session tracking
 let sessionStart=null;
@@ -640,6 +781,17 @@ async function saveAndExit(){
   const btn=document.getElementById("save-exit-btn");
   btn.textContent="Saving...";btn.disabled=true;
   try{
+    // Mark current question as abandoned if mid-question
+    if(!answered && questions[curQ]){
+      questionLog.push({
+        question_num:curQ+1,
+        type:questions[curQ].type,
+        target:questions[curQ].target.name||questions[curQ].target.id,
+        correct:false,
+        time_ms:questionStart?Date.now()-questionStart:null,
+        abandoned:true
+      });
+    }
     const res=await fetch(SB_URL+"/rest/v1/training_sessions",{
       method:"POST",
       headers:{
@@ -653,11 +805,23 @@ async function saveAndExit(){
     if(!res.ok) throw new Error(await res.text());
     btn.textContent="✓ Saved!";
     setTimeout(()=>{
+      // Full reset before returning to splash
       clearInterval(tiv);
-      showSplash();
-      document.getElementById("save-exit-btn").style.display="none";
-      document.getElementById("save-exit-btn").disabled=false;
-      document.getElementById("save-exit-btn").textContent="Save & Exit";
+      hideTip();
+      resetHL();
+      questions=[];curQ=0;score=0;streak=0;correct=0;questionLog=[];
+      sessionStart=null;answered=false;
+      updScore();
+      // Reset submit button for next session
+      const submitBtn=document.getElementById("submit-btn");
+      if(submitBtn){submitBtn.disabled=false;submitBtn.innerHTML="<span>📤</span> Submit Results to Dashboard";submitBtn.style.background="";submitBtn.style.border="";submitBtn.style.color="";}
+      document.getElementById("submit-status").style.display="none";
+      // Hide results if showing, go back to splash
+      document.getElementById("results").style.display="none";
+      document.getElementById("splash").style.display="flex";
+      btn.style.display="none";
+      btn.disabled=false;
+      btn.textContent="Save & Exit";
     },800);
   }catch(err){
     console.error(err);
