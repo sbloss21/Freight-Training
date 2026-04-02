@@ -452,13 +452,13 @@ function loadQ(){
     d3.select("#labels-g").style("display","none"); // hide abbreviations
     stateLabelsVisible=false; // disable hover tooltips for states
   }else{
-    document.getElementById("qtxt").textContent="Find "+q.target.name+", "+q.target.state+" on the map";
+    document.getElementById("qtxt").textContent="Find "+q.target.name+" on the map";
     document.getElementById("qbadge").textContent="CITY";
-    document.getElementById("instrtxt").textContent="Hover a city dot to see its name. Click the correct city to answer.";
+    document.getElementById("instrtxt").textContent="No labels shown — hover a dot to reveal its name, then click the correct city.";
     document.getElementById("maphint").textContent="Hover dots for city names · Click to answer";
     d3.select("#cities-g").style("display",null);
-    d3.select("#labels-g").style("display",null); // show state abbreviations in city mode
-    stateLabelsVisible=true; // enable hover tooltips so state context is available
+    d3.select("#labels-g").style("display","none"); // hide state abbreviations — would give away the answer
+    stateLabelsVisible=false; // disable state name tooltips too — same reason
   }
   if(gMode==="timed"){document.getElementById("ttrack").style.display="block";startTimer();}
   else document.getElementById("ttrack").style.display="none";
@@ -484,7 +484,12 @@ function doTimeout(){
     d3.select("#labels-g").style("display",null);
     stateLabelsVisible=true;
   }
-  else{d3.select("#cc-"+q.target.id).attr("r",7).classed("correct",true);d3.select("#cl-"+q.target.id).classed("revealed",true);}
+  else{
+    d3.select("#cc-"+q.target.id).attr("r",7).classed("correct",true);
+    d3.select("#cl-"+q.target.id).classed("revealed",true);
+    d3.select("#labels-g").style("display",null);
+    stateLabelsVisible=true;
+  }
   showFb(false,"Time's up! — "+q.target.name,q.type==="city"?q.target.fact:SFACTS[q.target.abbr]||"");
 }
 
@@ -506,6 +511,9 @@ function onCity(cid){
   const ok=cid===q.target.id;
   d3.select("#cc-"+cid).attr("r",7).classed(ok?"correct":"wrong",true);
   if(!ok){d3.select("#cc-"+q.target.id).attr("r",8).classed("correct",true);d3.select("#cl-"+q.target.id).classed("revealed",true);}
+  // Reveal state labels after answering so rep can learn the location in context
+  d3.select("#labels-g").style("display",null);
+  stateLabelsVisible=true;
   doAnswer(ok,q.target.name,q.target.fact);
 }
 
