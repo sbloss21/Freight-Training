@@ -792,6 +792,8 @@ async function submitResults(){
   btn.innerHTML='<span style="display:inline-block;animation:spin .7s linear infinite">⏳</span> Submitting...';
   statusEl.style.display="none";
   try{
+    const payload=buildPayload(false);
+    console.log("Sending payload:",JSON.stringify(payload));
     const res=await fetch(SB_URL+"/rest/v1/training_sessions",{
       method:"POST",
       headers:{
@@ -800,7 +802,7 @@ async function submitResults(){
         "Authorization":"Bearer "+SB_KEY,
         "Prefer":"return=minimal"
       },
-      body:JSON.stringify(buildPayload(false))
+      body:JSON.stringify(payload)
     });
     if(!res.ok){const err=await res.text();console.error("Supabase HTTP "+res.status+":",err);throw new Error("HTTP "+res.status+" — "+err);}
     statusEl.style.cssText="display:block;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;";
@@ -809,8 +811,8 @@ async function submitResults(){
     btn.style.background="rgba(52,211,153,.15)";btn.style.border="1px solid rgba(52,211,153,.3)";btn.style.color="#34d399";
   }catch(err){
     console.error("Supabase error:",err);
-    statusEl.style.cssText="display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;";
-    statusEl.textContent="⚠ Submission failed — check connection and try again.";
+    statusEl.style.cssText="display:block;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:#f87171;font-size:.7rem;";
+    statusEl.textContent="⚠ "+err.message;
     btn.disabled=false;
     btn.innerHTML="<span>📤</span> Retry Submission";
   }
