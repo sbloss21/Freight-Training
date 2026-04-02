@@ -136,6 +136,14 @@ body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradi
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'"
         onkeydown="if(event.key==='Enter')startGame()"/>
     </div>
+    <div style="width:100%;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <label style="font-family:var(--mono);font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;white-space:nowrap;">Questions</label>
+      <select id="qty-select" style="flex:1;padding:9px 12px;background:var(--card2);border:1px solid var(--border2);border-radius:7px;font-family:var(--mono);font-size:.82rem;color:var(--text);outline:none;cursor:pointer;">
+        <option value="5">5 — Quick drill</option>
+        <option value="10">10 — Short session</option>
+        <option value="25" selected>25 — Full session</option>
+      </select>
+    </div>
     <div style="width:100%;margin-bottom:14px;display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(230,114,34,.06);border:1px solid rgba(230,114,34,.25);border-radius:8px;cursor:pointer;" onclick="toggleBeginner(this)" id="beginner-toggle">
       <div style="width:18px;height:18px;border-radius:4px;border:2px solid var(--accent);background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;" id="beginner-check"></div>
       <div>
@@ -460,7 +468,8 @@ let tiv=null,tleft=10,mapReady=false;
 let stateLabelsVisible=false;
 let cityTooltipsVisible=false;
 let beginnerMode=false;
-const TOTAL=25;
+let GAME_TOTAL=25;
+const TOTAL=25; // default, overridden by GAME_TOTAL at start
 
 // Session tracking
 let sessionStart=null;
@@ -557,10 +566,10 @@ function buildQs(){
   const ss=Object.entries(FIPS).map(([fips,s])=>({fips,...s})).sort(()=>Math.random()-.5);
   const cs=[...CITIES].sort(()=>Math.random()-.5);
   let qs=[];
-  if(gMode==="states"||gMode==="timed") ss.slice(0,TOTAL).forEach(s=>qs.push({type:"state",target:s}));
-  else if(gMode==="cities") cs.slice(0,TOTAL).forEach(c=>qs.push({type:"city",target:c}));
-  else{for(let i=0;i<TOTAL;i++) i%2===0&&ss[Math.floor(i/2)]?qs.push({type:"state",target:ss[Math.floor(i/2)]}):cs[Math.floor(i/2)]&&qs.push({type:"city",target:cs[Math.floor(i/2)]});}
-  return qs.slice(0,TOTAL).sort(()=>Math.random()-.5);
+  if(gMode==="states"||gMode==="timed") ss.slice(0,GAME_TOTAL).forEach(s=>qs.push({type:"state",target:s}));
+  else if(gMode==="cities") cs.slice(0,GAME_TOTAL).forEach(c=>qs.push({type:"city",target:c}));
+  else{for(let i=0;i<GAME_TOTAL;i++) i%2===0&&ss[Math.floor(i/2)]?qs.push({type:"state",target:ss[Math.floor(i/2)]}):cs[Math.floor(i/2)]&&qs.push({type:"city",target:cs[Math.floor(i/2)]});}
+  return qs.slice(0,GAME_TOTAL).sort(()=>Math.random()-.5);
 }
 
 function startGame(){
@@ -570,6 +579,7 @@ function startGame(){
     const inp=document.getElementById("trainee-name");
     inp.style.borderColor="var(--accent)";inp.placeholder="Enter your name first";inp.focus();return;
   }
+  GAME_TOTAL=parseInt(document.getElementById("qty-select").value)||25;
   document.getElementById("splash").style.display="none";
   questions=buildQs();curQ=0;score=0;streak=0;correct=0;questionLog=[];
   sessionStart=Date.now();
@@ -578,6 +588,7 @@ function startGame(){
 }
 function restartGame(){
   document.getElementById("results").style.display="none";
+  GAME_TOTAL=parseInt(document.getElementById("qty-select").value)||25;
   questions=buildQs();curQ=0;score=0;streak=0;correct=0;questionLog=[];
   sessionStart=Date.now();
   // Reset submit button
@@ -596,11 +607,11 @@ function toggleBeginner(el){
 }
 
 function loadQ(){
-  if(curQ>=questions.length){showResults();return;}
+  if(curQ>=GAME_TOTAL||curQ>=questions.length){showResults();return;}
   answered=false;clearFb();resetHL();questionStart=Date.now();
   const q=questions[curQ];
-  document.getElementById("qnum").textContent="Q "+(curQ+1)+" / "+TOTAL;
-  document.getElementById("prog").style.width=((curQ/TOTAL)*100)+"%";
+  document.getElementById("qnum").textContent="Q "+(curQ+1)+" / "+GAME_TOTAL;
+  document.getElementById("prog").style.width=((curQ/GAME_TOTAL)*100)+"%";
   if(q.type==="state"){
     document.getElementById("qtxt").textContent="Click the state of "+q.target.name;
     document.getElementById("qbadge").textContent="STATE";
@@ -757,11 +768,11 @@ function buildPayload(partial){
     elapsed_seconds: elapsed,
     elapsed_display: mins>0?(secs>0?mins+"m "+secs+"s":mins+"m"):secs+"s",
     score: correct,
-    total: questionLog.length||TOTAL,
+    total: questionLog.length||GAME_TOTAL,
     pct: pct,
     grade: grade,
     modules_selected: (gMode==="timed"?"speed":gMode),
-    mod_scores: JSON.stringify({geography: {correct:correct, total:questionLog.length||TOTAL, pct:pct}}),
+    mod_scores: JSON.stringify({geography: {correct:correct, total:questionLog.length||GAME_TOTAL, pct:pct}}),
     question_details: JSON.stringify(questionLog.map(q=>({
       num: q.question_num,
       type: q.type,
@@ -791,7 +802,7 @@ async function submitResults(){
       },
       body:JSON.stringify(buildPayload(false))
     });
-    if(!res.ok){const err=await res.text();throw new Error(err);}
+    if(!res.ok){const err=await res.text();console.error("Supabase HTTP "+res.status+":",err);throw new Error("HTTP "+res.status+" — "+err);}
     statusEl.style.cssText="display:block;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;";
     statusEl.textContent="✓ Results submitted successfully!";
     btn.innerHTML="✓ Submitted";
@@ -830,7 +841,11 @@ async function saveAndExit(){
       },
       body:JSON.stringify(buildPayload(true))
     });
-    if(!res.ok) throw new Error(await res.text());
+    if(!res.ok){
+      const errBody=await res.text();
+      console.error("Supabase HTTP "+res.status+":",errBody);
+      throw new Error("HTTP "+res.status+" — "+errBody);
+    }
     btn.textContent="✓ Saved!";
     setTimeout(()=>{
       // Full reset before returning to splash
@@ -854,7 +869,7 @@ async function saveAndExit(){
   }catch(err){
     console.error(err);
     btn.textContent="Save & Exit";btn.disabled=false;
-    alert("Could not save — check your internet connection.");
+    alert("Save failed: "+err.message);
   }
 }
 
