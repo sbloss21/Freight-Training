@@ -760,16 +760,16 @@ function buildPayload(partial){
     total: questionLog.length||TOTAL,
     pct: pct,
     grade: grade,
-    modules_selected: [gMode==="timed"?"speed":gMode],
-    mod_scores: {geography: {correct:correct, total:questionLog.length||TOTAL, pct:pct}},
-    question_details: questionLog.map(q=>({
+    modules_selected: (gMode==="timed"?"speed":gMode),
+    mod_scores: JSON.stringify({geography: {correct:correct, total:questionLog.length||TOTAL, pct:pct}}),
+    question_details: JSON.stringify(questionLog.map(q=>({
       num: q.question_num,
       type: q.type,
       target: q.target,
       correct: q.correct,
       time_ms: q.time_ms,
       timed_out: q.timed_out||false
-    })),
+    }))),
     partial: partial||false
   };
 }
